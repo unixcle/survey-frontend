@@ -10,7 +10,7 @@ export default function PassChange() {
 
   const [showPassword, setShowPassword] = useState({
     current: false,
-    new: false,
+    newP: false,
     confirm: false,
   });
 
@@ -21,11 +21,11 @@ export default function PassChange() {
   const fetchPass = async () => {
     try {
       const payload = {
-        current_password: currentPass,
-        new_pass: newPass,
-        confirm_pass: confirmPass,
+        old_password: currentPass,
+        new_password: newPass,
+        confirm_new_password: confirmPass,
       };
-      const res = await api.patch(
+      const res = await api.post(
         "/api/auth/profile/change-password/",
         payload,
       );
@@ -100,7 +100,7 @@ export default function PassChange() {
             </label>
 
             <input
-              type="password"
+              type={showPassword.newP ? "text" : "password"}
               value={newPass}
               onChange={handleChange(setNewPass)}
               required
@@ -111,11 +111,11 @@ export default function PassChange() {
               type="button"
               onClick={() => setShowPassword((prev)=>({
                 ...prev,
-                new:!prev.new
+                newP:!prev.newP
               }))}
               className="absolute right-4 top-2/3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
             >
-              {showPassword.new ? <FaEyeSlash /> : <FaEye />}
+              {showPassword.newP ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
 
@@ -137,7 +137,7 @@ export default function PassChange() {
               type="button"
               onClick={() => setShowPassword((prev)=>({
                 ...prev,
-                current:!prev.current
+                confirm:!prev.confirm
               }))}
               className="absolute right-4 top-2/3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
             >

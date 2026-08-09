@@ -7,7 +7,7 @@ export const fetchSurveys = createAsyncThunk(
   "surveys/fetchSurveys",
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await api.get("http://127.0.0.1:8000/api/survey/");
+      const { data } = await api.get("/api/survey/");
       return Array.isArray(data) ? data : (data?.results ?? []);
     } catch (err) {
       return rejectWithValue(

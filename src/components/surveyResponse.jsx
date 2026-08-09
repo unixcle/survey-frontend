@@ -98,7 +98,7 @@ export default function surveyResponse() {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: err.response.data,
+        text: err.response.data.errors[0].detail,
       });
     }
   };

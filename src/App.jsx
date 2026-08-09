@@ -1,17 +1,32 @@
 import { Outlet, NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "./slices/authSlice";
+import { logout , logoutUser } from "./slices/authSlice";
 
 export default function App() {
   const dispatch = useDispatch();
 
   const { access } = useSelector((state) => state.auth);
+  const refresh = useSelector((state)=> state.auth.refresh)
 
-  const handleLogout = () => {
-    dispatch(logout());
-    window.location.assign("/login");
-  };
-
+  const handleLogout = async () => {
+      const result = await dispatch(logoutUser(refresh));
+  
+      console.log("LOGOUT RESULT:", result);
+      console.log("LOGOUT TYPE:", result.type);
+  
+      if (logoutUser.fulfilled.match(result)) {
+        dispatch(logout)
+        Swal.fire({
+          icon: "success",
+          title: "Logged out",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+  
+        navigate("/login");
+      }
+      
+    };
   return (
     <div className="min-h-dvh bg-gray-50 text-gray-900">
       <header className="border-b bg-white">
@@ -23,6 +38,9 @@ export default function App() {
             </NavLink>
             <NavLink to="/surveys" className="hover:underline">
               Surveys
+            </NavLink>
+            <NavLink to="profile" className="hover:underline"> 
+              Profile
             </NavLink>
             <NavLink to="/survey/new" className="hover:underline">
               Create New Survey

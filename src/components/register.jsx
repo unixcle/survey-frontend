@@ -124,21 +124,15 @@ const Register = () => {
 
       const api = err?.response?.data;
 
-      const msg =
-        api?.detail ||
-        (typeof api === "string" ? api : null) ||
-        Object.entries(api || {})
-          .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(" , ") : v}`)
-          .join(" | ") ||
-        err?.message ||
-        "cant connect to servers";
+      
 
-      dispatch(registerFailure(msg));
+
+      dispatch(registerFailure(api.errors));
       // ❌ ERROR ALERT
       Swal.fire({
         icon: "error",
         title: "Registration failed",
-        text: msg,
+        text: api.errors[0].detail,
         confirmButtonText: "Try again",
       });
     }

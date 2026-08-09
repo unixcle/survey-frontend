@@ -30,10 +30,10 @@ const router = createBrowserRouter([
       { path: "/register", element: <Register /> },
       { path: "/login", element: <LoginForm /> },
       { path:"/survey/response/:slug", element: <SurveyResponse/>},
-      { path:"/profile" , element:<Profile/>},
       {
         element: <ProtectedRoute />,
         children: [
+          { path:"/profile" , element:<Profile/>},
           { path: "/surveys", element: <SurveyList /> },
           { path: "/survey/new", element: <SurveyCreate /> },
           // { path: "/survey/:title", element: <SurveyDetail/>},
