@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 export default function SurveyDashboard({ surveys }) {
+  console.log(surveys)
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="mx-auto max-w-7xl">
@@ -88,14 +89,14 @@ export default function SurveyDashboard({ surveys }) {
                   <th className="px-6 py-4 font-medium">Survey</th>
                   <th className="px-6 py-4 font-medium">Status</th>
                   <th className="px-6 py-4 font-medium">Responses</th>
-                  <th className="px-6 py-4 font-medium">Created</th>
+                  <th className="px-6 py-4 font-medium">Privacy</th>
                   <th className="px-6 py-4 font-medium">Result</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-slate-100">
                 {surveys.map((survey) => (
-                  <tr className="transition hover:bg-slate-50">
+                  <tr className="transition hover:bg-slate-50" key={survey.id}>
                     <td className="px-6 py-4">
                       <div>
                         <p className="font-medium text-slate-800">
@@ -108,8 +109,8 @@ export default function SurveyDashboard({ surveys }) {
                     </td>
 
                     <td className="px-6 py-4">
-                      <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600">
-                        Active
+                      <span className={survey.is_active ? `rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600`: `rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500`}>
+                        {survey.is_active ? "Active" : "Closed"}
                       </span>
                     </td>
 
@@ -118,7 +119,7 @@ export default function SurveyDashboard({ surveys }) {
                     </td>
 
                     <td className="px-6 py-4 text-sm text-slate-500">
-                      Aug 5, 2026
+                      {survey.is_public ? "public" : "private"}
                     </td>
 
                     <td className="px-6 py-4">
@@ -130,68 +131,6 @@ export default function SurveyDashboard({ surveys }) {
                     </td>
                   </tr>
                 ))}
-
-                <tr className="transition hover:bg-slate-50">
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="font-medium text-slate-800">
-                        Product Feedback
-                      </p>
-                      <p className="mt-1 text-xs text-slate-400">
-                        product-feedback
-                      </p>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600">
-                      Active
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-4 text-sm text-slate-600">312</td>
-
-                  <td className="px-6 py-4 text-sm text-slate-500">
-                    Aug 2, 2026
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-                      View
-                    </button>
-                  </td>
-                </tr>
-
-                <tr className="transition hover:bg-slate-50">
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="font-medium text-slate-800">
-                        Website Experience
-                      </p>
-                      <p className="mt-1 text-xs text-slate-400">
-                        website-experience
-                      </p>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
-                      Closed
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-4 text-sm text-slate-600">544</td>
-
-                  <td className="px-6 py-4 text-sm text-slate-500">
-                    Jul 28, 2026
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-                      View
-                    </button>
-                  </td>
-                </tr>
               </tbody>
             </table>
           </div>

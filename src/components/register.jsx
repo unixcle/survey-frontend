@@ -8,6 +8,7 @@ import {
 } from "../slices/authSlice";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { api } from "../api/axios";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -87,8 +88,8 @@ const Register = () => {
         ...(familyName.trim() && { last_name: familyName.trim() }),
       };
 
-      const { data } = await axios.post(
-        "http://127.0.0.1:8000/api/auth/register/",
+      const { data } = await api.post(
+        "/auth/register/",
         payload,
         { headers: { "Content-Type": "application/json" } },
       );

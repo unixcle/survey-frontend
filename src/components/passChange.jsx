@@ -26,7 +26,7 @@ export default function PassChange() {
         confirm_new_password: confirmPass,
       };
       const res = await api.post(
-        "/api/auth/profile/change-password/",
+        "/auth/profile/change-password/",
         payload,
       );
       if (res.status === 200) {

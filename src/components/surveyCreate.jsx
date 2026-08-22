@@ -11,6 +11,8 @@ const SurveyCreate = () => {
     title: "",
     description: "",
     questions: [],
+    isActive: true,
+    isPublic: true,
   });
   const [question, setQuestion] = useState({
     title: "",
@@ -120,6 +122,8 @@ const SurveyCreate = () => {
     const payload = {
       title: survey.title.trim(),
       description: survey.description.trim(),
+      is_active:survey.isActive,
+      is_public:survey.isPublic,
       questions: survey.questions.map((q) => ({
         title: (q.title || "").trim(),
         required: q.required,
@@ -285,6 +289,52 @@ const SurveyCreate = () => {
                 className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Survey description"
               />
+            </div>
+
+            <div className="flex items-center justify-between gap-6">
+              {/* Public / Private Toggle */}
+              <div className="flex items-center gap-3 w-full">
+                <span className="text-sm font-semibold text-gray-700">
+                  {survey.isPublic ? "Public" : "Private"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSurvey((prev) => ({ ...prev, isPublic: !prev.isPublic }))
+                  }
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
+                    survey.isPublic ? "bg-indigo-500" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                      survey.isPublic ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Active / Closed Toggle */}
+              <div className="flex items-center gap-3 w-full">
+                <span className="text-sm font-semibold text-gray-700">
+                  {survey.isActive ? "Active" : "Closed"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSurvey((prev) => ({ ...prev, isActive: !prev.isActive }))
+                  }
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
+                    survey.isActive ? "bg-green-500" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                      survey.isActive ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
 
             <hr className="my-6" />

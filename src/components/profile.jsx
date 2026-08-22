@@ -27,7 +27,7 @@ export default function Profile() {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const res = await api.get("/api/auth/profile/");
+        const res = await api.get("/auth/profile/");
         const data = res.data;
         dispatch(setUser(data));
       } catch (err) {

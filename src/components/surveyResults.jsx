@@ -19,7 +19,7 @@ export default function SurveyResults() {
     try {
       setLoading(true);
 
-      const res = await api.get(`/api/survey/${slug}/resaults/`);
+      const res = await api.get(`/survey/${slug}/results/`);
 
       if (res.status === 200) {
         setResults(res.data);
@@ -54,7 +54,7 @@ export default function SurveyResults() {
       }));
 
       const res = await api.post(
-        `/api/survey/questions/${questionId}/summarize/`,
+        `/survey/questions/${questionId}/summarize/`,
       );
 
       console.log("STATUS:", res.status);
@@ -159,7 +159,7 @@ export default function SurveyResults() {
                     )}
 
                     {/* Summary Button */}
-                    <button
+                    {question.question_type === "free_text" ? <button
                       onClick={() => handleSummery(question.id)}
                       disabled={summaryLoading[question.id]}
                       className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
@@ -167,7 +167,7 @@ export default function SurveyResults() {
                       {summaryLoading[question.id]
                         ? "Generating..."
                         : "Summarize"}
-                    </button>
+                    </button> : ""}
                   </div>
                 </div>
               </div>

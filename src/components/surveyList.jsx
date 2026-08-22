@@ -8,6 +8,7 @@ import { Share2 } from "lucide-react";
 const SurveyList = () => {
   const dispatch = useDispatch();
   const { surveys, loadingList, error } = useSelector((s) => s.surveys);
+  console.log(surveys)
   useEffect(() => {
     dispatch(fetchSurveys());
   }, [dispatch]);
@@ -76,7 +77,7 @@ const SurveyList = () => {
               </button>
 
               <Link to={`/survey/edit/${survey.slug}`}>
-                <button className="px-3 py-1 bg-blue-400 text-white rounded-xl disabled:opacity-50" disabled={survey.total_responses > 0}>
+                <button className="px-3 py-1 bg-blue-400 text-white rounded-xl disabled:opacity-50">
                   Edit
                 </button>
               </Link>

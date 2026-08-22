@@ -27,7 +27,7 @@ export default function EditProfile(user) {
         first_name: formData.firstName,
         last_name: formData.lastName,
       };
-      const res = await api.patch("/api/auth/profile/", payload);
+      const res = await api.patch("/auth/profile/", payload);
       if (res.status === 200) {
         Swal.fire({
           icon: "success",

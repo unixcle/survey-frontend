@@ -11,6 +11,8 @@ const SurveyEditPage = () => {
     title: "",
     description: "",
     questions: [],
+    isActive: true,
+    isPublic: true,
   });
   const [question, setQuestion] = useState({
     title: "",
@@ -26,16 +28,29 @@ const SurveyEditPage = () => {
     // ابتدا داده‌های نظرسنجی را از API بگیرید و در state ذخیره کنید
     const fetchSurveyData = async () => {
       try {
-        const response = await api.get(
-          `http://127.0.0.1:8000/api/survey/${slug}/`,
-        );
-        setSurvey(response.data); // ذخیره داده‌های نظرسنجی
+        const response = await api.get(`/survey/${slug}/`);
+        console.log(response)
+        setSurvey({
+          ...response.data,
+          isActive: response.data.is_active,
+          isPublic: response.data.is_public,
+        }); // ذخیره داده‌های نظرسنجی
       } catch (err) {
         console.error("Error fetching survey data:", err);
       }
     };
     fetchSurveyData();
   }, [slug]);
+
+  useEffect(() => {
+    if (survey.total_responses > 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Limited Editing",
+        text: "This survey has responses. You can only edit the title and description.",
+      });
+    }
+  }, [survey.total_responses]);
 
   // تغییرات در عنوان و توضیحات نظرسنجی
   const handleSurveyChange = (e) => {
@@ -52,7 +67,7 @@ const SurveyEditPage = () => {
     setQuestion((prevQuestion) => ({
       ...prevQuestion,
       [name]: value,
-      required: name === "free_text" ? false : true,
+      required: value === "multiple_choice",
     }));
   };
   const handleChoiceChange = (e, index) => {
@@ -209,6 +224,8 @@ const SurveyEditPage = () => {
       title: survey.title,
       id: survey.id,
       description: survey.description,
+      is_active: survey.isActive,
+      is_public: survey.isPublic,
       questions: survey.questions,
       slug: slug,
     };
@@ -252,6 +269,52 @@ const SurveyEditPage = () => {
             />
           </div>
 
+          <div className="flex items-center justify-between gap-6">
+            {/* Public / Private Toggle */}
+            <div className="flex items-center gap-3 w-full">
+              <span className="text-sm font-semibold text-gray-700">
+                {survey.isPublic ? "Public" : "Private"}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setSurvey((prev) => ({ ...prev, isPublic: !prev.isPublic }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
+                  survey.isPublic ? "bg-indigo-500" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                    survey.isPublic ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Active / Closed Toggle */}
+            <div className="flex items-center gap-3 w-full">
+              <span className="text-sm font-semibold text-gray-700">
+                {survey.isActive ? "Active" : "Closed"}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setSurvey((prev) => ({ ...prev, isActive: !prev.isActive }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
+                  survey.isActive ? "bg-green-500" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                    survey.isActive ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
           <hr className="my-6" />
 
           {/* Current questions */}
@@ -283,17 +346,19 @@ const SurveyEditPage = () => {
                   <div className="flex gap-2">
                     <button
                       type="button"
+                      disabled={survey.total_responses > 0}
                       onClick={() => handleDeleteQuestion(index)}
-                      className="px-3 py-1 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600"
+                      className={`${survey.total_responses > 0 ? "cursor-not-allowed px-3 py-1 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600" : "px-3 py-1 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600"}`}
                     >
                       Delete
                     </button>
                     <button
                       type="button"
+                      disabled={survey.total_responses > 0}
                       onClick={() =>
                         setQuestion({ ...q, editIndex: index, openEdit: true })
                       }
-                      className="px-3 py-1 text-sm rounded-lg bg-green-500 text-white hover:bg-green-600"
+                      className={`${survey.total_responses > 0 ? "cursor-not-allowed px-3 py-1 text-sm rounded-lg bg-green-500 text-white hover:bg-green-600" : "px-3 py-1 text-sm rounded-lg bg-green-500 text-white hover:bg-green-600"}`}
                     >
                       Edit
                     </button>
@@ -315,6 +380,7 @@ const SurveyEditPage = () => {
             <input
               type="text"
               value={question.title}
+              disabled={survey.total_responses > 0}
               onChange={handleQuestionChange}
               name="title"
               className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"

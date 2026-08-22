@@ -22,7 +22,7 @@ export default function surveyResponse() {
   const handleFetchDetail = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`http://127.0.0.1:8000/api/survey/${slug}`);
+      const res = await api.get(`/survey/${slug}/response/`);
 
       if (res.status === 200) {
         setLoading(false);
@@ -82,7 +82,7 @@ export default function surveyResponse() {
       };
 
       const res = await api.post(
-        `http://127.0.0.1:8000/api/survey/${slug}/response/`,
+        `/survey/${slug}/response/`,
         payload,
       );
 

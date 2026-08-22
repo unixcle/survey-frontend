@@ -5,6 +5,7 @@ import { loginRequest, loginSuccess, loginFailure } from "../slices/authSlice";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { api } from "../api/axios";
 // import getError from "../errors/getError"
 
 const LoginForm = () => {
@@ -23,8 +24,8 @@ const LoginForm = () => {
     dispatch(loginRequest());
 
     try {
-      const { data } = await axios.post(
-        "http://127.0.0.1:8000/api/auth/token/",
+      const { data } = await api.post(
+        "/auth/token/",
         { username:userName, password },
         {
           headers: {

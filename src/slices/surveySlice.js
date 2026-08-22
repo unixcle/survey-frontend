@@ -7,7 +7,7 @@ export const fetchSurveys = createAsyncThunk(
   "surveys/fetchSurveys",
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await api.get("/api/survey/");
+      const { data } = await api.get("/survey/");
       return Array.isArray(data) ? data : (data?.results ?? []);
     } catch (err) {
       return rejectWithValue(
@@ -23,7 +23,7 @@ export const createSurvey = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const { data } = await api.post(
-        "http://127.0.0.1:8000/api/survey/",
+        "/survey/",
         payload
       );
       return data;
@@ -40,7 +40,7 @@ export const deleteSurvey = createAsyncThunk(
   "surveys/deleteSurvey",
   async (surveySlug, { rejectWithValue }) => {
     try {
-      const response = await api.delete(`http://127.0.0.1:8000/api/survey/${surveySlug}/`);
+      const response = await api.delete(`/survey/${surveySlug}/`);
       return surveySlug;  // فقط شناسه نظرسنجی را باز می‌گردانیم
     } catch (err) {
       return rejectWithValue(
@@ -56,10 +56,12 @@ export const updateSurveyThunk = createAsyncThunk(
   async (surveyData, { rejectWithValue }) => {
     console.log(surveyData)
     try {
-      const response = await api.put(`http://127.0.0.1:8000/api/survey/${surveyData.slug}/`, {
+      const response = await api.put(`/survey/${surveyData.slug}/`, {
         title: surveyData.title,
         description: surveyData.description,
         questions: surveyData.questions,  // ارسال سوالات جدید یا ویرایش شده
+        is_active: surveyData.is_active,
+        is_public: surveyData.is_public,
       });
       console.log("UPDATE RESPONSE FROM BACKEND:", response.data);
 

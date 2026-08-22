@@ -6,7 +6,7 @@ export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (refreshToken, thunkAPI) => {
     try {
-      await api.post("/api/auth/logout/", {
+      await api.post("/auth/logout/", {
         refresh: refreshToken,
       });
     } catch (error) {

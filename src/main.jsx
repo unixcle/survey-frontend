@@ -14,7 +14,7 @@ import { setupInterceptors } from "./api/interceptor";
 import Register from "./components/register.jsx";
 import SurveyEditPage from "./components/surveyEdit.jsx";
 import ProtectedRoute from "./routes/protected.jsx";
-// import SurveyDetail from "./components/surveyDetail.jsx";
+import SurveyDetail from "./components/surveyDetail.jsx";
 import SurveyResponse from "./components/surveyResponse.jsx";
 import SurveyResults from "./components/surveyResults.jsx";
 import Profile from "./components/profile.jsx";
@@ -30,13 +30,13 @@ const router = createBrowserRouter([
       { path: "/register", element: <Register /> },
       { path: "/login", element: <LoginForm /> },
       { path:"/survey/response/:slug", element: <SurveyResponse/>},
+      { path: "/survey/:slug", element: <SurveyDetail/>},
       {
         element: <ProtectedRoute />,
         children: [
           { path:"/profile" , element:<Profile/>},
           { path: "/surveys", element: <SurveyList /> },
           { path: "/survey/new", element: <SurveyCreate /> },
-          // { path: "/survey/:title", element: <SurveyDetail/>},
           { path: "/survey/edit/:slug", element: <SurveyEditPage /> },
           { path: "/survey/results/:slug", element: <SurveyResults/>},
         ],
