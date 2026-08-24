@@ -1,140 +1,206 @@
-import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { logout, logoutUser, setUser } from "../slices/authSlice";
-import { api } from "../api/axios";
-import Swal from "sweetalert2";
-import Dashboard from "./Dashboard";
-import PassChange from "./passChange";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import EditProfile from "./editProfile";
+import Swal from "sweetalert2";
+
+import { logout, logoutUser, setUser } from "../slices/authSlice";
 import { fetchSurveys } from "../slices/surveySlice";
+import { api } from "../api/axios";
+
+import PassChange from "./passChange";
+import EditProfile from "./editProfile";
 import SurveyDashboard from "./surveyDashboard";
 
+// Central place to define tabs -> avoids magic numbers scattered in JSX
+const TABS = {
+  SURVEYS: "surveys",
+  PASSWORD: "password",
+  EDIT_PROFILE: "editProfile",
+};
+
+const NAV_ITEMS = [
+  { key: TABS.SURVEYS, label: "My Surveys" },
+  { key: TABS.PASSWORD, label: "Change Password" },
+  { key: TABS.EDIT_PROFILE, label: "Edit Profile" },
+];
+
 export default function Profile() {
-  const [order, setOrder] = useState(1);
-  const [loading, setLoading] = useState(false);
-
-  const refresh = useSelector((state) => state.auth.refresh);
-
-  const { surveys, loadingList, error } = useSelector((s) => s.surveys);
-
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(TABS.SURVEYS);
+  const [loading, setLoading] = useState(true);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
+  const refresh = useSelector((state) => state.auth.refresh);
+  const user = useSelector((state) => state.auth.user);
+  const { surveys } = useSelector((state) => state.surveys);
+
+  // Fetch profile + surveys once on mount
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProfile = async () => {
       setLoading(true);
       try {
         const res = await api.get("/auth/profile/");
-        const data = res.data;
-        dispatch(setUser(data));
+        if (isMounted) dispatch(setUser(res.data));
       } catch (err) {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: err.message,
+          text: err?.response?.data?.detail || err.message || "Failed to load profile.",
         });
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchProfile();
     dispatch(fetchSurveys());
-  }, []);
 
-  const handleLogout = async () => {
-    const result = await dispatch(logoutUser(refresh));
+    return () => {
+      isMounted = false;
+    };
+  }, [dispatch]);
 
-    console.log("LOGOUT RESULT:", result);
-    console.log("LOGOUT TYPE:", result.type);
+  const handleLogout = useCallback(async () => {
+    const confirm = await Swal.fire({
+      icon: "warning",
+      title: "Log out?",
+      text: "You will need to sign in again to continue.",
+      showCancelButton: true,
+      confirmButtonText: "Log out",
+    });
 
-    if (logoutUser.fulfilled.match(result)) {
-      dispatch(logout);
+    if (!confirm.isConfirmed) return;
+
+    try {
+      const result = await dispatch(logoutUser(refresh));
+
+      if (logoutUser.fulfilled.match(result)) {
+        dispatch(logout()); // was `dispatch(logout)` — must invoke the action creator
+        await Swal.fire({
+          icon: "success",
+          title: "Logged out",
+          timer: 1200,
+          showConfirmButton: false,
+        });
+        navigate("/login");
+      } else {
+        throw new Error(result.payload?.detail || "Logout failed. Please try again.");
+      }
+    } catch (err) {
       Swal.fire({
-        icon: "success",
-        title: "Logged out",
-        timer: 1500,
-        showConfirmButton: false,
+        icon: "error",
+        title: "Error",
+        text: err.message,
       });
-
-      navigate("/login");
     }
-  };
-  const user = useSelector((state) => state.auth.user);
-  console.log(user);
+  }, [dispatch, refresh, navigate]);
+
+  const activeContent = useMemo(() => {
+    switch (activeTab) {
+      case TABS.PASSWORD:
+        return <PassChange />;
+      case TABS.EDIT_PROFILE:
+        return <EditProfile user={user} />;
+      case TABS.SURVEYS:
+      default:
+        return <SurveyDashboard surveys={surveys} />;
+    }
+  }, [activeTab, user, surveys]);
+
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-slate-100">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
       </div>
     );
   }
+
   return (
     <div className="min-h-screen bg-slate-100">
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="hidden md:flex w-64 flex-col bg-white border-r shadow-sm">
-          <div className="p-6 border-b">
-            <h2 className="text-2xl font-bold text-indigo-600">Dashboard</h2>
-          </div>
+      <div className="flex flex-col md:flex-row">
+        {/* Sidebar (desktop) */}
+        <aside className="hidden md:flex w-64 flex-col bg-white border-r shadow-sm shrink-0">
+          <SidebarContent
+            user={user}
+            activeTab={activeTab}
+            onSelect={setActiveTab}
+            onLogout={handleLogout}
+          />
+        </aside>
 
-          <nav className="flex-1 p-4 space-y-2">
+        {/* Top nav (mobile) */}
+        <header className="md:hidden bg-white border-b shadow-sm">
+          <div className="flex items-center justify-between p-4">
+            <h2 className="text-xl font-bold text-indigo-600">Dashboard</h2>
             <button
-              className={order === 1 ? `w-full bg-indigo-100 rounded-lg px-4 py-3 text-left font-medium text-indigo-600`: `w-full rounded-lg  px-4 py-3 text-left hover:bg-slate-100`}
-              onClick={() => setOrder(1)}
-            >
-              Dashboard
-            </button>
-
-            <button className={order === 2 ? `w-full bg-indigo-100 rounded-lg px-4 py-3 text-left font-medium text-indigo-600`: `w-full rounded-lg  px-4 py-3 text-left hover:bg-slate-100`} onClick={() => setOrder(2)}>
-              My Survey Results
-            </button>
-
-            <button className={order === 3 ? `w-full bg-indigo-100 rounded-lg px-4 py-3 text-left font-medium text-indigo-600`: `w-full rounded-lg  px-4 py-3 text-left hover:bg-slate-100`}>
-              Wishlist
-            </button>
-
-            <button
-              className={order === 4 ? `w-full bg-indigo-100 rounded-lg px-4 py-3 text-left font-medium text-indigo-600`: `w-full rounded-lg  px-4 py-3 text-left hover:bg-slate-100`}
-              onClick={() => setOrder(4)}
-            >
-              Change Password
-            </button>
-
-            <button
-              className={order === 5 ? `w-full bg-indigo-100 rounded-lg px-4 py-3 text-left font-medium text-indigo-600`: `w-full rounded-lg  px-4 py-3 text-left hover:bg-slate-100`}
-              onClick={() => setOrder(5)}
-            >
-              Edit Profile
-            </button>
-          </nav>
-
-          <div className="p-4 border-t">
-            <button
-              className="w-full rounded-lg bg-red-500 py-3 text-white hover:bg-red-600"
               onClick={handleLogout}
+              className="text-sm font-medium text-red-500 hover:text-red-600"
             >
               Logout
             </button>
           </div>
-        </aside>
+          <nav className="flex overflow-x-auto border-t">
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => setActiveTab(item.key)}
+                className={`flex-1 whitespace-nowrap px-4 py-3 text-sm font-medium ${
+                  activeTab === item.key
+                    ? "border-b-2 border-indigo-600 text-indigo-600"
+                    : "text-slate-500"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        </header>
 
         {/* Content */}
-        {order === 1 ? (
-          <Dashboard user={user} loading={loading} />
-        ) : order === 4 ? (
-          <PassChange />
-        ) : order === 5 ? (
-          <EditProfile user={user} />
-        ) : order === 2 ? (
-          <SurveyDashboard surveys={surveys}/>
-        ) : (
-          ""
-        )}
+        <main className="flex-1 p-4 md:p-8">{activeContent}</main>
       </div>
     </div>
+  );
+}
+
+function SidebarContent({ user, activeTab, onSelect, onLogout }) {
+  return (
+    <>
+      <div className="p-6 border-b">
+        <h2 className="text-2xl font-bold text-indigo-600">Dashboard</h2>
+        {user?.username && (
+          <p className="mt-1 truncate text-sm text-slate-500">{user.username}</p>
+        )}
+      </div>
+
+      <nav className="flex-1 p-4 space-y-2">
+        {NAV_ITEMS.map((item) => (
+          <button
+            key={item.key}
+            onClick={() => onSelect(item.key)}
+            aria-current={activeTab === item.key ? "page" : undefined}
+            className={
+              activeTab === item.key
+                ? "w-full rounded-lg bg-indigo-100 px-4 py-3 text-left font-medium text-indigo-600"
+                : "w-full rounded-lg px-4 py-3 text-left hover:bg-slate-100"
+            }
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
+
+      <div className="p-4 border-t">
+        <button
+          onClick={onLogout}
+          className="w-full rounded-lg bg-red-500 py-3 text-white transition-colors hover:bg-red-600"
+        >
+          Logout
+        </button>
+      </div>
+    </>
   );
 }

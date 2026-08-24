@@ -4,7 +4,6 @@ import "./index.css";
 import App from "./App.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./components/home.jsx";
-import SurveyList from "./components/surveyList.jsx";
 import SurveyCreate from "./components/surveyCreate.jsx";
 import { persistor, store } from "./store.js";
 import { Provider } from "react-redux";
@@ -35,7 +34,6 @@ const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           { path:"/profile" , element:<Profile/>},
-          { path: "/surveys", element: <SurveyList /> },
           { path: "/survey/new", element: <SurveyCreate /> },
           { path: "/survey/edit/:slug", element: <SurveyEditPage /> },
           { path: "/survey/results/:slug", element: <SurveyResults/>},

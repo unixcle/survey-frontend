@@ -1,7 +1,40 @@
 import { Link } from "react-router-dom";
+import { Pencil, Trash2, Share2 } from "lucide-react";
+import Swal from "sweetalert2";
+
+
 
 export default function SurveyDashboard({ surveys }) {
-  console.log(surveys)
+  const handleDeleteSurvey = (surveySlug) => {
+    console.log(surveySlug);
+    const formattedTitle = encodeURIComponent(surveySlug.replace(/\s+/g, "-"));
+    Swal.fire({
+      title: "Are you sure?",
+      text: "This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        dispatch(deleteSurvey(formattedTitle)); // حذف نظرسنجی
+        Swal.fire("Deleted!", "Survey deleted successfully!", "success");
+      }
+    });
+  };
+
+  const handleCopy = async (surveySlug) => {
+    try {
+      await navigator.clipboard.writeText(
+        `http://localhost:5173/survey/response/${surveySlug}`,
+      );
+      Swal.fire("Link Copied!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to copy link");
+    }
+  };
+  console.log(surveys);
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="mx-auto max-w-7xl">
@@ -28,7 +61,9 @@ export default function SurveyDashboard({ surveys }) {
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">Total Surveys</p>
             <div className="mt-2 flex items-end justify-between">
-              <h2 className="text-3xl font-bold text-slate-800">24</h2>
+              <h2 className="text-3xl font-bold text-slate-800">
+                {surveys.length}
+              </h2>
               <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600">
                 +12%
               </span>
@@ -38,7 +73,9 @@ export default function SurveyDashboard({ surveys }) {
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">Active Surveys</p>
             <div className="mt-2 flex items-end justify-between">
-              <h2 className="text-3xl font-bold text-slate-800">8</h2>
+              <h2 className="text-3xl font-bold text-slate-800">
+                {surveys.filter((item) => item.is_active).length}
+              </h2>
               <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-600">
                 Active
               </span>
@@ -48,7 +85,12 @@ export default function SurveyDashboard({ surveys }) {
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">Total Responses</p>
             <div className="mt-2 flex items-end justify-between">
-              <h2 className="text-3xl font-bold text-slate-800">1,284</h2>
+              <h2 className="text-3xl font-bold text-slate-800">
+                {surveys.reduce(
+                  (total, item) => total + item.total_responses,
+                  0,
+                )}
+              </h2>
               <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
                 +18%
               </span>
@@ -109,7 +151,13 @@ export default function SurveyDashboard({ surveys }) {
                     </td>
 
                     <td className="px-6 py-4">
-                      <span className={survey.is_active ? `rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600`: `rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500`}>
+                      <span
+                        className={
+                          survey.is_active
+                            ? `rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-600`
+                            : `rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500`
+                        }
+                      >
                         {survey.is_active ? "Active" : "Closed"}
                       </span>
                     </td>
@@ -123,11 +171,36 @@ export default function SurveyDashboard({ surveys }) {
                     </td>
 
                     <td className="px-6 py-4">
-                      <Link to={`/survey/results/${survey.slug}`}>
-                        <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-                          View
+                      <div className="flex items-center gap-3">
+                        <Link to={`/survey/results/${survey.slug}`}>
+                          <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+                            View
+                          </button>
+                        </Link>
+
+                        <Link to={`/survey/edit/${survey.slug}`}><button
+                          title="Edit"
+                          className="text-slate-400 transition hover:text-indigo-600"
+                        >
+                          <Pencil size={16} />
+                        </button></Link>
+
+                        <button
+                          title="Delete"
+                          onClick={() => handleDeleteSurvey(survey.slug)}
+                          className="text-slate-400 transition hover:text-red-600"
+                        >
+                          <Trash2 size={16} />
                         </button>
-                      </Link>
+
+                        <button
+                          title="Share"
+                          onClick={()=>handleCopy(survey.slug)}
+                          className="text-slate-400 transition hover:text-emerald-600"
+                        >
+                          <Share2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

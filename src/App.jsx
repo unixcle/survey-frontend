@@ -6,7 +6,6 @@ import Swal from "sweetalert2";
 
 const NAV_ITEMS = [
   { label: "Home", to: "/", end: true },
-  { label: "Surveys", to: "/surveys" },
   { label: "Profile", to: "profile" },
   { label: "Create New Survey", to: "/survey/new" },
 ];
@@ -125,7 +124,7 @@ export default function App() {
           </div>
         </nav>
       </header>
-      <main className="mx-auto max-w-5xl p-6">
+      <main className="p-6">
         <Outlet />
       </main>
     </div>

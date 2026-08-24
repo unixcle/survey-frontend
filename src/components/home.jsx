@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { gsap } from "gsap";
 import { api } from "../api/axios";
-import background from "../assets/back.svg"
+import background from "../assets/back2.svg"
 
 export default function Home() {
   const [page, setPage] = useState(0);
@@ -128,8 +128,8 @@ export default function Home() {
   }, [page, survey]);
 
   return (
-    <div className="min-h-screen bg-cover bg-no-repeat bg-[#99ffbd] bg-[linear-gradient(180deg,rgba(153,255,189,1)_0%,rgba(189,255,215,1)_9%,rgba(255,255,255,1)_100%)] shadow-lg rounded-3xl">
-      <style>{`
+    <div className="min-h-screen bg-cover bg-no-repeat shadow-lg rounded-3xl" style={{ backgroundImage: `url(${background})` }}>
+      <style>{`]
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;700&display=swap');
         .font-display { font-family: 'Fraunces', serif; }
         .font-mono-tight { font-family: 'JetBrains Mono', monospace; }
@@ -137,24 +137,18 @@ export default function Home() {
 
       {/* Hero */}
       <section ref={heroRef} className="text-center pt-20 pb-14 px-4">
-        <p className="font-mono-tight text-[11px] tracking-[0.3em] text-black uppercase mb-5">
+        <p className="font-mono-tight text-[11px] tracking-[0.3em] text-white uppercase mb-5">
           Open for responses
         </p>
-        <h2 className="font-display text-5xl md:text-6xl font-semibold text-[#004418] mb-8">
-          Welcome <span className="text-[#3D5AFE]">✨</span>
+        <h2 className="font-display text-5xl md:text-6xl font-bold text-[#F5F5FF] mb-8">
+          Build Ask Learn <span className="text-[#3D5AFE]">✨</span>
         </h2>
         <div className="flex items-center justify-center gap-4">
           <Link
-            to="/surveys"
-            className="px-6 py-3 rounded-full bg-[#99fdff] text-black border border-[#F6F1E7]/20 text-[#F6F1E7] hover:bg-[#F6F1E7]/10 transition font-mono-tight text-sm"
-          >
-            available surveys
-          </Link>
-          <Link
             to="/survey/new"
-            className="px-6 py-3 rounded-full bg-[#3D5AFE] text-white hover:opacity-90 transition font-mono-tight text-sm"
+            className="px-6 py-3 rounded-full bg-[#60de2f] text-white hover:opacity-90 transition font-mono-tight text-md"
           >
-            create New survey +
+            create Your Own Survey
           </Link>
         </div>
       </section>
@@ -163,11 +157,11 @@ export default function Home() {
       <section className="relative px-4 pb-24">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-6 px-2">
-            <p className="font-mono-tight text-[11px] tracking-[0.25em] text-[#F6F1E7]/40 uppercase">
+            <p className="font-mono-tight text-[11px] tracking-[0.25em] text-white uppercase">
               Public surveys
             </p>
             {total > 0 && (
-              <p className="font-mono-tight text-[11px] tracking-[0.25em] text-[#F6F1E7]/40 uppercase">
+              <p className="font-mono-tight text-[11px] tracking-[0.25em] text-[#F6F1E7] uppercase">
                 {String(page + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
               </p>
             )}
@@ -258,7 +252,7 @@ export default function Home() {
                     aria-current={i === page}
                     className={`h-2.5 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D5AFE] ${
                       i === page
-                        ? "w-7 bg-[#3D5AFE]"
+                        ? "w-7 bg-[#F6F1E7]"
                         : "w-2.5 bg-[#F6F1E7]/20 hover:bg-[#F6F1E7]/40"
                     }`}
                   />
