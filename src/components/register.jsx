@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import {
   registerRequest,
@@ -9,6 +8,7 @@ import {
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/axios";
+import { getError } from "../errors/getError";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -46,7 +46,7 @@ const Register = () => {
   };
 
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.auth);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -79,6 +79,7 @@ const Register = () => {
     dispatch(registerRequest());
 
     try {
+      // Optional name fields are only included when the user provides a value.
       const payload = {
         username: userName.trim(),
         email: email.trim(),
@@ -88,13 +89,11 @@ const Register = () => {
         ...(familyName.trim() && { last_name: familyName.trim() }),
       };
 
-      const { data } = await api.post(
-        "/auth/register/",
-        payload,
-        { headers: { "Content-Type": "application/json" } },
-      );
+      const { data } = await api.post("/auth/register/", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
 
-      // حالت 1: بک‌اند بعد ثبت‌نام توکن می‌ده
+      // Handle registration responses that include authentication tokens.
       if (data?.access) {
         dispatch(
           registerSuccess({
@@ -104,7 +103,7 @@ const Register = () => {
           }),
         );
       } else {
-        // حالت 2: بک‌اند فقط پیام/یوزر می‌ده (توکن نه)
+        // Handle registration responses without authentication tokens.
         dispatch(
           registerSuccess({
             access: null,
@@ -120,20 +119,12 @@ const Register = () => {
         confirmButtonText: "Continue",
       }).then(() => navigate("/login"));
     } catch (err) {
-      console.log("STATUS:", err?.response?.status);
-      console.log("DATA:", err?.response?.data);
-
-      const api = err?.response?.data;
-
-      
-
-
-      dispatch(registerFailure(api.errors));
-      // ❌ ERROR ALERT
+      const errorMsg = getError(err);
+      dispatch(registerFailure(errorMsg));
       Swal.fire({
         icon: "error",
         title: "Registration failed",
-        text: api.errors[0].detail,
+        text: errorMsg,
         confirmButtonText: "Try again",
       });
     }
@@ -162,7 +153,12 @@ const Register = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onBlur={() => setTouched({ ...touched, firstName: true })}
+              onBlur={() =>
+                setTouched((prev) => ({
+                  ...prev,
+                  name: true,
+                }))
+              }
               placeholder="Ali"
               className={`w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition ${inputClass("firstName", name)}`}
             />
@@ -176,7 +172,12 @@ const Register = () => {
               type="text"
               value={familyName}
               onChange={(e) => setFamilyName(e.target.value)}
-              onBlur={() => setTouched({ ...touched, familyName: true })}
+              onBlur={() =>
+                setTouched((prev) => ({
+                  ...prev,
+                  familyName: true,
+                }))
+              }
               placeholder="Taghizade"
               className={`w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition ${inputClass("familyName", familyName)}`}
             />
@@ -189,7 +190,12 @@ const Register = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onBlur={() => setTouched({ ...touched, email: true })}
+              onBlur={() =>
+                setTouched((prev) => ({
+                  ...prev,
+                  email: true,
+                }))
+              }
               placeholder="user@gmail.com"
               autoComplete="email"
               className={`w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition ${inputClass("email", email)}`}
@@ -205,7 +211,12 @@ const Register = () => {
               type="text"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
-              onBlur={() => setTouched({ ...touched, userName: true })}
+              onBlur={() =>
+                setTouched((prev) => ({
+                  ...prev,
+                  userName: true,
+                }))
+              }
               placeholder="Alireza"
               autoComplete="username"
               className={`w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition ${inputClass("userName", userName)}`}
@@ -221,7 +232,12 @@ const Register = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onBlur={() => setTouched({ ...touched, password: true })}
+              onBlur={() =>
+                setTouched((prev) => ({
+                  ...prev,
+                  password: true,
+                }))
+              }
               placeholder="••••••••"
               autoComplete="new-password"
               minLength={8}
@@ -239,7 +255,12 @@ const Register = () => {
               type="password"
               value={confirmPass}
               onChange={(e) => setConfirmPass(e.target.value)}
-              onBlur={() => setTouched({ ...touched, confirmPass: true })}
+              onBlur={() =>
+                setTouched((prev) => ({
+                  ...prev,
+                  confirmPass: true,
+                }))
+              }
               placeholder="••••••••"
               autoComplete="new-password"
               className={`w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition ${inputClass("confirmPass", confirmPass)}`}

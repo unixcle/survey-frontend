@@ -1,4 +1,4 @@
-import { createSlice , createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 import { api } from "../api/axios";
 
@@ -29,7 +29,7 @@ const authSlice = createSlice({
   reducers: {
     loginRequest: (state) => {
       state.loading = true;
-      state.error = null; // خطای قبلی پاک بشه
+      state.error = null;
     },
 
     loginSuccess: (state, action) => {
@@ -49,7 +49,6 @@ const authSlice = createSlice({
       state.user = null;
     },
 
-    // 👇 Register
     registerRequest: (state) => {
       state.loading = true;
       state.error = null;
@@ -58,11 +57,9 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = null;
 
-      // اگر بک‌اند بعد ثبت‌نام توکن داد:
       state.access = action.payload.access ?? null;
       state.refresh = action.payload.refresh ?? null;
 
-      // اگر بک‌اند user برگردوند:
       state.user = action.payload.user ?? null;
     },
     registerFailure: (state, action) => {
@@ -78,7 +75,7 @@ const authSlice = createSlice({
       state.error = null;
     },
 
-    //  اختیاری ولی خیلی کاربردی: وقتی access رو با refresh تمدید کردی
+    // Update authentication tokens after a successful refresh.
     setTokens: (state, action) => {
       state.access = action.payload.access;
       state.refresh = action.payload.refresh;
@@ -102,6 +99,10 @@ const authSlice = createSlice({
       .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+
+        state.access = null;
+        state.refresh = null;
+        state.user = null;
       });
   },
 });

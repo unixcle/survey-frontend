@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Home from "./components/home.jsx";
+import Home from "./components/home.jsx"
 import SurveyCreate from "./components/surveyCreate.jsx";
 import { persistor, store } from "./store.js";
 import { Provider } from "react-redux";
@@ -17,12 +17,14 @@ import SurveyDetail from "./components/surveyDetail.jsx";
 import SurveyResponse from "./components/surveyResponse.jsx";
 import SurveyResults from "./components/surveyResults.jsx";
 import Profile from "./components/profile.jsx";
+import ErrorPage from "./components/errorPage.jsx";
 
 setupInterceptors();
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Home /> },
 

@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 
 export default function SurveyDashboard({ surveys }) {
   const handleDeleteSurvey = (surveySlug) => {
-    console.log(surveySlug);
+    // Normalize the slug before sending it to the API.
     const formattedTitle = encodeURIComponent(surveySlug.replace(/\s+/g, "-"));
     Swal.fire({
       title: "Are you sure?",
@@ -17,7 +17,7 @@ export default function SurveyDashboard({ surveys }) {
       cancelButtonText: "Cancel",
     }).then((result) => {
       if (result.isConfirmed) {
-        dispatch(deleteSurvey(formattedTitle)); // حذف نظرسنجی
+        dispatch(deleteSurvey(formattedTitle));
         Swal.fire("Deleted!", "Survey deleted successfully!", "success");
       }
     });
@@ -34,7 +34,6 @@ export default function SurveyDashboard({ surveys }) {
       alert("Failed to copy link");
     }
   };
-  console.log(surveys);
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="mx-auto max-w-7xl">
@@ -117,8 +116,8 @@ export default function SurveyDashboard({ surveys }) {
                 Your latest surveys and their activity
               </p>
             </div>
-
-            <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+            {/* TODO: Add pagination or a page showing all surveys. */}
+            <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700"> 
               View all
             </button>
           </div>

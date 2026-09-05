@@ -1,22 +1,20 @@
 import { useState } from "react";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { loginRequest, loginSuccess, loginFailure } from "../slices/authSlice";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { api } from "../api/axios";
-// import getError from "../errors/getError"
+import {getError} from "../errors/getError"
 
 const LoginForm = () => {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  // const Message = getError(errorCode,statusCode)
 
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.auth);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,12 +24,12 @@ const LoginForm = () => {
     try {
       const { data } = await api.post(
         "/auth/token/",
-        { username:userName, password },
+        { username: userName, password },
         {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       if (data.access) {
         dispatch(
@@ -41,12 +39,13 @@ const LoginForm = () => {
             user: null,
           }),
         );
-        navigate("/surveys")
+        navigate("/profile");
       } else {
         dispatch(loginFailure(data.error || "failed login"));
       }
     } catch (err) {
-      console.log(err)
+      // Prefer the API's error message and fall back to the request error
+      // when the server does not provide a specific message.
       const msg =
         err?.response?.data?.detail ||
         err?.response?.data?.non_field_errors?.[0] ||
@@ -55,11 +54,11 @@ const LoginForm = () => {
 
       dispatch(loginFailure(msg));
       Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: msg,
-      confirmButtonText: "OK",
-    });
+        icon: "error",
+        title: "Error",
+        text:getError(err),
+        confirmButtonText: "OK",
+      });
     }
   };
 
@@ -131,8 +130,7 @@ const LoginForm = () => {
               type="button"
               className="text-gray-600 hover:text-gray-900 transition"
               onClick={() => {
-                // بعداً می‌تونی روت فراموشی رمز بزاری
-                alert("بعداً بخش فراموشی رمز رو اضافه می‌کنیم 🙂");
+                alert("we will add this action soon 🙂");
               }}
             >
               Forgot your Password

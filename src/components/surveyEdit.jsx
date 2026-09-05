@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { updateSurveyThunk } from "../slices/surveySlice";
 import Swal from "sweetalert2";
 import { api } from "../api/axios";
+import { getError } from "../errors/getError";
 
 const SurveyEditPage = () => {
   const { slug } = useParams();
@@ -19,24 +20,26 @@ const SurveyEditPage = () => {
     question_type: "free_text", // یا "multiple_choice"
     required: false,
     choices: [],
-    openEdit: false, // وضعیت ویرایش سوال
-    editIndex: -1, // اندیس سوال در حال ویرایش
+    openEdit: false, // Track edit state for the question
+    editIndex: -1, // Index of the question being edited
   });
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // ابتدا داده‌های نظرسنجی را از API بگیرید و در state ذخیره کنید
     const fetchSurveyData = async () => {
       try {
         const response = await api.get(`/survey/${slug}/`);
-        console.log(response)
         setSurvey({
           ...response.data,
           isActive: response.data.is_active,
           isPublic: response.data.is_public,
-        }); // ذخیره داده‌های نظرسنجی
+        }); 
       } catch (err) {
-        console.error("Error fetching survey data:", err);
+        Swal.fire({
+          icon:"error",
+          title:"Error",
+          text:getError(err)
+        })
       }
     };
     fetchSurveyData();
@@ -52,7 +55,6 @@ const SurveyEditPage = () => {
     }
   }, [survey.total_responses]);
 
-  // تغییرات در عنوان و توضیحات نظرسنجی
   const handleSurveyChange = (e) => {
     const { name, value } = e.target;
     setSurvey((prevSurvey) => ({
@@ -61,7 +63,6 @@ const SurveyEditPage = () => {
     }));
   };
 
-  // تغییرات در سوالات
   const handleQuestionChange = (e) => {
     const { name, value } = e.target;
     setQuestion((prevQuestion) => ({
@@ -84,7 +85,6 @@ const SurveyEditPage = () => {
       choices: [...prev.choices, { title: "" }],
     }));
   };
-  // حذف گزینه
   const handleDeleteChoice = (index) => {
     const updatedChoices = question.choices.filter((_, i) => i !== index);
     setQuestion((prevQuestion) => ({
@@ -93,7 +93,6 @@ const SurveyEditPage = () => {
     }));
   };
 
-  // اضافه کردن یا ویرایش سوال
   const handleAddOrEditQuestion = () => {
     if (question.editIndex >= 0) {
       if (!question.title) {
@@ -125,7 +124,7 @@ const SurveyEditPage = () => {
         });
         return;
       }
-      // ویرایش سوال موجود
+      // editing currebt questions
       const updatedQuestions = survey.questions.map((q, index) => {
         if (index === question.editIndex) {
           return {
@@ -140,7 +139,7 @@ const SurveyEditPage = () => {
       });
       setSurvey({ ...survey, questions: updatedQuestions });
     } else {
-      // اضافه کردن سوال جدید
+      // add new questions
       if (!question.title) {
         Swal.fire({
           icon: "warning",
@@ -177,7 +176,7 @@ const SurveyEditPage = () => {
       }));
     }
 
-    // پاک کردن فیلدهای ورودی سوال بعد از اضافه کردن
+    // reseting fields
     setQuestion({
       title: "",
       question_type: "free_text",
@@ -188,13 +187,11 @@ const SurveyEditPage = () => {
     });
   };
 
-  // حذف سوال
   const handleDeleteQuestion = (index) => {
     const updatedQuestions = survey.questions.filter((_, i) => i !== index);
     setSurvey({ ...survey, questions: updatedQuestions });
   };
 
-  // ارسال تغییرات به API
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!survey.title.trim()) {
@@ -229,7 +226,6 @@ const SurveyEditPage = () => {
       questions: survey.questions,
       slug: slug,
     };
-    console.log(updatedSurvey);
     dispatch(updateSurveyThunk(updatedSurvey));
   };
 

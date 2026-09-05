@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import ProgressBar from "./progressBar";
 import { api } from "../api/axios";
 import { useParams } from "react-router-dom";
+import Swal from "sweetalert2";
+import { getError } from "../errors/getError";
 
 export default function SurveyResults() {
   const { slug } = useParams();
@@ -27,8 +29,12 @@ export default function SurveyResults() {
         throw new Error("Something went wrong");
       }
     } catch (err) {
-      console.log(err);
-      setError(err);
+      setError(err)
+      Swal.fire({
+        icon:"error",
+        title:"Error",
+        text:getError(err)
+      })
     } finally {
       setLoading(false);
     }
@@ -56,9 +62,6 @@ export default function SurveyResults() {
       const res = await api.post(
         `/survey/questions/${questionId}/summarize/`,
       );
-
-      console.log("STATUS:", res.status);
-      console.log("DATA:", res.data);
 
       setSummary((prev) => ({
         ...prev,

@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { api } from "../api/axios";
 import Swal from 'sweetalert2';
 
-// GET list
+
 export const fetchSurveys = createAsyncThunk(
   "surveys/fetchSurveys",
   async (_, { rejectWithValue }) => {
@@ -17,7 +17,7 @@ export const fetchSurveys = createAsyncThunk(
   }
 );
 
-// POST create
+
 export const createSurvey = createAsyncThunk(
   "surveys/createSurvey",
   async (payload, { rejectWithValue }) => {
@@ -35,13 +35,13 @@ export const createSurvey = createAsyncThunk(
   }
 );
 
-// DELETE deleteSurvey
+
 export const deleteSurvey = createAsyncThunk(
   "surveys/deleteSurvey",
   async (surveySlug, { rejectWithValue }) => {
     try {
       const response = await api.delete(`/survey/${surveySlug}/`);
-      return surveySlug;  // فقط شناسه نظرسنجی را باز می‌گردانیم
+      return surveySlug;  // Return the slug so the item can be removed from the Redux state.
     } catch (err) {
       return rejectWithValue(
         err?.response?.data || err?.message || "خطا در حذف survey"
@@ -50,7 +50,7 @@ export const deleteSurvey = createAsyncThunk(
   }
 );
 
-// PUT updateSurvey
+
 export const updateSurveyThunk = createAsyncThunk(
   "surveys/updateSurvey",
   async (surveyData, { rejectWithValue }) => {
@@ -59,7 +59,7 @@ export const updateSurveyThunk = createAsyncThunk(
       const response = await api.put(`/survey/${surveyData.slug}/`, {
         title: surveyData.title,
         description: surveyData.description,
-        questions: surveyData.questions,  // ارسال سوالات جدید یا ویرایش شده
+        questions: surveyData.questions,  
         is_active: surveyData.is_active,
         is_public: surveyData.is_public,
       });

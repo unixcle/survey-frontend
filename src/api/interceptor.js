@@ -1,7 +1,7 @@
-import { api } from "./axios";
+import { api, refreshApi } from "./axios";
 import { logout, setTokens } from "../slices/authSlice";
 import { store } from "../store";
-import axios from "axios";
+
 
 export const setupInterceptors = () => {
   api.interceptors.request.use((config) => {
@@ -13,7 +13,8 @@ export const setupInterceptors = () => {
 
     return config;
   });
-
+  // Prevent multiple simultaneous refresh requests.
+  // Failed requests are queued until the current refresh finishes.
   let isRefreshing = false;
   let queue = [];
 
@@ -27,7 +28,7 @@ export const setupInterceptors = () => {
     store.dispatch(logout());
     redirectToLogin();
   };
-
+  // Resolve or reject all requests waiting for the refreshed token.
   const processQueue = (error, token = null) => {
     queue.forEach((p) => {
       if (error) {
@@ -48,16 +49,12 @@ export const setupInterceptors = () => {
 
       console.log("Response Error:", err.response?.status);
 
-      // فقط 401
-      if (
-        err.response?.status !== 401 ||
-        originalRequest._retry
-      ) {
+      // Only attempt token refresh for the first 401 response of a request.
+      if (err.response?.status !== 401 || originalRequest._retry) {
         return Promise.reject(err);
       }
 
-      // اگر خود refresh request خطا داد،
-      // دوباره وارد refresh نشو
+      // Prevent the refresh request itself from triggering another refresh.
       if (originalRequest.url === "/auth/token/refresh/") {
         forceLogoutAndLogin();
         return Promise.reject(err);
@@ -76,8 +73,7 @@ export const setupInterceptors = () => {
         return new Promise((resolve, reject) => {
           queue.push({ resolve, reject });
         }).then((newAccess) => {
-          originalRequest.headers.Authorization =
-            `Bearer ${newAccess}`;
+          originalRequest.headers.Authorization = `Bearer ${newAccess}`;
 
           return api(originalRequest);
         });
@@ -86,19 +82,16 @@ export const setupInterceptors = () => {
       isRefreshing = true;
 
       try {
-        console.log("Refreshing...");
-
-        // مهم:
-        // اینجا از axios معمولی استفاده می‌کنیم
-        // نه api که interceptor روی آن نصب شده
-        const { data } = await axios.post(
-          "http://127.0.0.1:8000/api/auth/token/refresh/",
+        // Use the default Axios instance here to avoid triggering
+        // the response interceptor recursively.
+        const { data } = await refreshApi.post(
+          "/auth/token/refresh/",
           { refresh },
           {
             headers: {
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         const newAccess = data?.access;
@@ -112,27 +105,23 @@ export const setupInterceptors = () => {
           setTokens({
             access: newAccess,
             refresh: newRefresh,
-          })
+          }),
         );
 
         processQueue(null, newAccess);
 
-        originalRequest.headers.Authorization =
-          `Bearer ${newAccess}`;
+        originalRequest.headers.Authorization = `Bearer ${newAccess}`;
 
         return api(originalRequest);
-
       } catch (refreshErr) {
-
         processQueue(refreshErr, null);
 
         forceLogoutAndLogin();
 
         return Promise.reject(refreshErr);
-
       } finally {
         isRefreshing = false;
       }
-    }
+    },
   );
 };

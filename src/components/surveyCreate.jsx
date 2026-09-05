@@ -5,6 +5,7 @@ import { createSurvey } from "../slices/surveySlice";
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import { Trash2 } from "lucide-react";
+import { getError } from "../errors/getError";
 
 const SurveyCreate = () => {
   const [survey, setSurvey] = useState({
@@ -77,7 +78,7 @@ const SurveyCreate = () => {
       questions: updatedQuestions,
     }));
 
-    // اگر همان سوالی که در حال ادیتش هست حذف شد
+    // Reset the edit state if the currently edited question is deleted.
     if (question.openEdit && question.editIndex === index) {
       setQuestion({
         title: "",
@@ -119,6 +120,7 @@ const SurveyCreate = () => {
       return;
     }
 
+    // Transform the survey state into the payload expected by the API.
     const payload = {
       title: survey.title.trim(),
       description: survey.description.trim(),
@@ -133,29 +135,24 @@ const SurveyCreate = () => {
               .map((c) => ({
                 title: (typeof c === "string" ? c : c?.title || "").trim(),
               }))
-              .filter((c) => c.title) // گزینه‌های خالی حذف می‌شن
+              .filter((c) => c.title) // removing empty slots
           : [],
       })),
     };
-    console.log(payload);
     try {
-      const created = await dispatch(createSurvey(payload)).unwrap();
 
       Swal.fire({
         icon: "success",
         title: "Survey created successfully",
       });
-      // 2) ناوبری بعد از موفقیت
+      // 2) Redirect to the surveys page after successful creation.
       navigate("/");
-      //? یا اگر صفحه detail داری:
-      //TODO navigate(`/surveys/${created.id}`);
-    } catch (e) {
+    } catch (err) {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: e?.message || "Something went wrong",
+        text: getError(err),
       });
-      console.log(e);
     }
   };
   // Handle changes in the question fields
@@ -165,13 +162,13 @@ const SurveyCreate = () => {
     setQuestion((prev) => ({
       ...prev,
       [name]: value,
-      required: value === "multiple_choice",
+      required: value === "multiple_choice",   
       choices:
         name === "question_type" &&
         value === "multiple_choice" &&
         prev.choices.length < 2
           ? ["", ""]
-          : value === "free_text"
+          : value === "free_text"    // Reset choices when switching back to a free-text question.
             ? []
             : prev.choices,
     }));

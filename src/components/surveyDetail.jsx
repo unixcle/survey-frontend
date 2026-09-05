@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api/axios";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
+import { getError } from "../errors/getError";
 
 export default function surveyDetail() {
   const { slug } = useParams();
@@ -18,13 +20,17 @@ export default function surveyDetail() {
       if (res.status === 200) {
         setLoading(false);
         setData(res.data);
-        console.log(res);
+  
       } else {
         throw new Error("something went wrong");
       }
     } catch (err) {
-      console.log(err);
       setError(err);
+      Swal.fire({
+        icon:"error",
+        title:"Error",
+        text:getError(err),
+      })
     } finally {
       setLoading(false);
     }

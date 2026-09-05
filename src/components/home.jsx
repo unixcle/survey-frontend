@@ -20,8 +20,8 @@ export default function Home() {
 
   const goTo = (delta) => {
     if (total === 0) return;
-    directionRef.current = delta >= 0 ? 1 : -1;
-    setPage((p) => ((p + delta) % total + total) % total);
+    directionRef.current = delta >= 0 ? 1 : -1;         // Keep navigation circular so moving past the first or last survey
+    setPage((p) => ((p + delta) % total + total) % total);    // wraps around to the opposite end.
   };
 
   const goToIndex = (index) => {
@@ -44,7 +44,7 @@ export default function Home() {
     fetchPublicSurveys();
   }, []);
 
-  // Hero entrance
+  // Animate the hero content when the page first loads
   useLayoutEffect(() => {
     if (reducedMotion.current) return;
     const ctx = gsap.context(() => {
@@ -59,7 +59,7 @@ export default function Home() {
     return () => ctx.revert();
   }, []);
 
-  // Card transition on page change
+  // Animate the survey card whenever the active survey changes
   useLayoutEffect(() => {
     if (!survey || !cardRef.current) return;
     const dir = directionRef.current;

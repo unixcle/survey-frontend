@@ -3,6 +3,7 @@ import { api } from "../api/axios";
 import Swal from "sweetalert2";
 import { useDispatch } from "react-redux";
 import { setUser } from "../slices/authSlice";
+import { getError } from "../errors/getError";
 
 export default function EditProfile(user) {
   const [formData, setFormData] = useState({
@@ -31,8 +32,8 @@ export default function EditProfile(user) {
       if (res.status === 200) {
         Swal.fire({
           icon: "success",
-          title: "Success",
-          text: "Changed",
+          title: "Profile Updated",
+          text: "Your profile has been updated successfully.",
         });
         dispatch(
           setUser({
@@ -43,21 +44,26 @@ export default function EditProfile(user) {
         );
       }
     } catch (err) {
-      console.log(err);
+      const msg = getError(err)
+      Swal.fire({
+        icon:"error",
+        title:"Error",
+        text:msg
+      })
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.firstName.trim() || !formData.lastName.trim()) return;
-
-    // API request goes here
-    console.log(formData);
     fetchEditProfile();
   };
 
   const handleCancel = () => {
-    // Reset form or navigate back
+    setFormData({
+      firstName:"",
+      lastName:"",
+    })
   };
 
   return (
@@ -73,7 +79,6 @@ export default function EditProfile(user) {
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
-          {/* First Name */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               First Name
@@ -90,7 +95,6 @@ export default function EditProfile(user) {
             />
           </div>
 
-          {/* Last Name */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               Last Name
@@ -119,7 +123,6 @@ export default function EditProfile(user) {
             </p>
           </div>
 
-          {/* Buttons */}
           <div className="flex justify-end gap-4 pt-2">
             <button
               type="button"

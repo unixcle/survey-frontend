@@ -10,8 +10,9 @@ import { api } from "../api/axios";
 import PassChange from "./passChange";
 import EditProfile from "./editProfile";
 import SurveyDashboard from "./surveyDashboard";
+import { getError } from "../errors/getError";
 
-// Central place to define tabs -> avoids magic numbers scattered in JSX
+//  Keep tab identifiers in one place to avoid hardcoded strings.
 const TABS = {
   SURVEYS: "surveys",
   PASSWORD: "password",
@@ -35,7 +36,7 @@ export default function Profile() {
   const user = useSelector((state) => state.auth.user);
   const { surveys } = useSelector((state) => state.surveys);
 
-  // Fetch profile + surveys once on mount
+  // Fetch profile + Load the user's profile and surveys when the dashboard mounts.
   useEffect(() => {
     let isMounted = true;
 
@@ -48,7 +49,7 @@ export default function Profile() {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: err?.response?.data?.detail || err.message || "Failed to load profile.",
+          text: getError(err),
         });
       } finally {
         if (isMounted) setLoading(false);
@@ -78,7 +79,7 @@ export default function Profile() {
       const result = await dispatch(logoutUser(refresh));
 
       if (logoutUser.fulfilled.match(result)) {
-        dispatch(logout()); // was `dispatch(logout)` — must invoke the action creator
+        dispatch(logout()); 
         await Swal.fire({
           icon: "success",
           title: "Logged out",
@@ -93,7 +94,7 @@ export default function Profile() {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: err.message,
+        text: getError(err),
       });
     }
   }, [dispatch, refresh, navigate]);

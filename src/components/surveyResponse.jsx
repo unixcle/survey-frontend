@@ -1,16 +1,18 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { api } from "../api/axios";
 import Swal from "sweetalert2";
 
-export default function surveyResponse() {
-  const { slug } = useParams();
-  //slug
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+import { api } from "../api/axios";
+import { getError } from "../errors/getError";
 
+export default function SurveyResponse() {
+  const { slug } = useParams();
+
+  const [data, setData] = useState(null);
   const [answers, setAnswers] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleAnswerChange = (questionId, value) => {
     setAnswers((prev) => ({
@@ -20,31 +22,29 @@ export default function surveyResponse() {
   };
 
   const handleFetchDetail = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get(`/survey/${slug}/response/`);
+    setLoading(true);
+    setError(null);
 
-      if (res.status === 200) {
-        setLoading(false);
-        setData(res.data);
-        console.log(res);
-      } else {
-        throw new Error("something went wrong");
-      }
+    try {
+      const { data } = await api.get(`/survey/${slug}/response/`);
+
+      setData(data);
     } catch (err) {
-      console.log(err);
-      setError(err);
+      setError(getError(err));
     } finally {
       setLoading(false);
     }
   };
 
   const handleSubmit = async () => {
-    // Validation
-    const emptyQuestion = data.questions.find((q) => {
-      const value = answers[q.id];
+    if (!data?.questions?.length) {
+      return;
+    }
 
-      if (q.question_type === "multiple_choice") {
+    const emptyQuestion = data.questions.find((question) => {
+      const value = answers[question.id];
+
+      if (question.question_type === "multiple_choice") {
         return value === undefined;
       }
 
@@ -52,129 +52,161 @@ export default function surveyResponse() {
     });
 
     if (emptyQuestion) {
-      Swal.fire({
+      await Swal.fire({
         icon: "warning",
         title: "Incomplete Survey",
         text: "Please answer all questions before submitting.",
       });
+
       return;
     }
 
-    try {
-      const formattedAnswer = data.questions.map((q) => {
-        const value = answers[q.id];
+    setSubmitting(true);
 
-        if (q.question_type === "multiple_choice") {
+    try {
+      const formattedAnswers = data.questions.map((question) => {
+        const value = answers[question.id];
+
+        if (question.question_type === "multiple_choice") {
           return {
-            question: q.id,
+            question: question.id,
             chosen_choice: value,
           };
         }
 
         return {
-          question: q.id,
-          text_answer: value,
+          question: question.id,
+          text_answer: value.trim(),
         };
       });
 
-      const payload = {
-        answers: formattedAnswer,
-      };
+      await api.post(`/survey/${slug}/response/`, {
+        answers: formattedAnswers,
+      });
 
-      const res = await api.post(
-        `/survey/${slug}/response/`,
-        payload,
-      );
-
-      if (res.status === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Finished!",
-          text: "Thanks for your help.",
-        });
-      }
+      await Swal.fire({
+        icon: "success",
+        title: "Finished!",
+        text: "Thanks for your help.",
+      });
     } catch (err) {
-      console.log(err)
-      Swal.fire({
+      await Swal.fire({
         icon: "error",
         title: "Error",
-        text: err.response.data.errors[0].detail,
+        text: getError(err),
       });
+    } finally {
+      setSubmitting(false);
     }
   };
+
   useEffect(() => {
     handleFetchDetail();
   }, [slug]);
 
-  if (loading) return <div className="text-center">loading</div>;
-  if (error) return <div className="text-center">{`${error.message}`}</div>;
-  if (!data) return <div className="text-center">no data</div>;
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-red-500">{error}</p>
+
+          <button
+            onClick={handleFetchDetail}
+            className="mt-4 rounded-xl bg-gray-900 px-5 py-2 text-white hover:bg-gray-800"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-gray-500">No survey data found.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center py-10 px-4">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8">
-        {/* Header */}
+    <div className="flex min-h-screen justify-center bg-gray-50 px-4 py-10">
+      <div className="w-full max-w-3xl rounded-2xl bg-white p-8 shadow-lg">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="mb-2 text-3xl font-bold text-gray-800">
             {data.title}
           </h1>
+
           <p className="text-gray-600">{data.description}</p>
         </div>
 
-        {/* Questions */}
         <div className="space-y-6">
-          {data.questions.map((q, index) => (
-            <div key={q.id} className="border border-gray-200 rounded-xl p-5">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                {index + 1}. {q.title}
+          {data.questions.map((question, index) => (
+            <div
+              key={question.id}
+              className="rounded-xl border border-gray-200 p-5"
+            >
+              <h3 className="mb-4 text-lg font-semibold text-gray-800">
+                {index + 1}. {question.title}
               </h3>
 
-              {q.question_type === "multiple_choice" ? (
+              {question.question_type === "multiple_choice" ? (
                 <div className="space-y-3">
-                  {q.choices.map((choice) => (
+                  {question.choices.map((choice) => (
                     <label
                       key={choice.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition
-                      ${
-                        answers[q.id] === choice.id
+                      className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition ${
+                        answers[question.id] === choice.id
                           ? "border-blue-500 bg-blue-50"
                           : "border-gray-200 hover:bg-gray-50"
                       }`}
                     >
                       <input
                         type="radio"
-                        name={`question-${q.id}`}
+                        name={`question-${question.id}`}
                         value={choice.id}
-                        checked={answers[q.id] === choice.id}
-                        onChange={(e) =>
-                          handleAnswerChange(q.id, Number(e.target.value))
+                        checked={answers[question.id] === choice.id}
+                        onChange={() =>
+                          handleAnswerChange(question.id, choice.id)
                         }
                         className="accent-blue-500"
                       />
+
                       <span className="text-gray-700">{choice.title}</span>
                     </label>
                   ))}
                 </div>
               ) : (
                 <textarea
-                  value={answers[q.id] || ""}
-                  onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                  value={answers[question.id] || ""}
+                  onChange={(e) =>
+                    handleAnswerChange(question.id, e.target.value)
+                  }
                   placeholder="Type your answer here..."
                   rows={4}
-                  required
-                  className="w-full rounded-xl border border-gray-300 p-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={submitting}
+                  className="w-full rounded-xl border border-gray-300 p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                 />
               )}
             </div>
           ))}
         </div>
 
-        {/* Submit */}
         <button
+          type="button"
           onClick={handleSubmit}
-          className="mt-8 w-full py-4 bg-blue-500 text-white text-lg font-semibold rounded-xl hover:bg-blue-600 transition"
+          disabled={submitting}
+          className="mt-8 w-full rounded-xl bg-blue-500 py-4 text-lg font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-400"
         >
-          Finish
+          {submitting ? "Submitting..." : "Finish"}
         </button>
       </div>
     </div>

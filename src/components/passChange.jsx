@@ -2,11 +2,12 @@ import { useState } from "react";
 import { api } from "../api/axios";
 import Swal from "sweetalert2";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { getError } from "../errors/getError";
 
 export default function PassChange() {
-  const [currentPass, setCurrentPass] = useState();
-  const [newPass, setNewPass] = useState();
-  const [confirmPass, setConfirmPass] = useState();
+  const [currentPass, setCurrentPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
 
   const [showPassword, setShowPassword] = useState({
     current: false,
@@ -14,6 +15,7 @@ export default function PassChange() {
     confirm: false,
   });
 
+  //use setter instead of using 3 handler function
   const handleChange = (setter) => (e) => {
     setter(e.target.value);
   };
@@ -32,12 +34,16 @@ export default function PassChange() {
       if (res.status === 200) {
         Swal.fire({
           icon: "success",
-          title: "Success",
-          text: "Changed",
+          title: "Password Changed",
+          text: "Your Password has been updated successfully.",
         });
       }
     } catch (err) {
-      console.log(err);
+      Swal.fire({
+        icon:"error",
+        title:"Error",
+        text:getError(err)
+      })
     }
   };
   const handleSubmit = (e) => {
@@ -46,12 +52,20 @@ export default function PassChange() {
     if (!currentPass || !newPass || !confirmPass) return;
 
     if (newPass !== confirmPass) {
-      // خطا
+      Swal.fire({
+        icon:"error",
+        title:"Error",
+        text:"Your new Password and Confirm Password are not the same"
+      })
       return;
     }
 
     if (newPass.length < 8) {
-      // خطا
+      Swal.fire({
+        icon:"error",
+        title:"Error",
+        text:"Password should be more than 8 characters"
+      })
       return;
     }
 
@@ -159,7 +173,6 @@ export default function PassChange() {
             </ul>
           </div>
 
-          {/* Buttons */}
           <div className="flex justify-end gap-4 pt-2">
             <button
               type="button"
