@@ -140,6 +140,7 @@ const SurveyCreate = () => {
       })),
     };
     try {
+      dispatch(createSurvey(payload))
 
       Swal.fire({
         icon: "success",

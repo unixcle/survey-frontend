@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
 import { Pencil, Trash2, Share2 } from "lucide-react";
 import Swal from "sweetalert2";
+import { useDispatch } from "react-redux";
+import { deleteSurvey } from "../slices/surveySlice";
 
 
 
 export default function SurveyDashboard({ surveys }) {
+  const dispatch = useDispatch()
   const handleDeleteSurvey = (surveySlug) => {
     // Normalize the slug before sending it to the API.
     const formattedTitle = encodeURIComponent(surveySlug.replace(/\s+/g, "-"));
