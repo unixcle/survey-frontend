@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
 import { api } from "../api/axios";
@@ -7,6 +7,8 @@ import { getError } from "../errors/getError";
 
 export default function SurveyResponse() {
   const { slug } = useParams();
+
+  const navigate = useNavigate()
 
   const [data, setData] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -89,6 +91,7 @@ export default function SurveyResponse() {
         title: "Finished!",
         text: "Thanks for your help.",
       });
+      navigate("/")
     } catch (err) {
       await Swal.fire({
         icon: "error",

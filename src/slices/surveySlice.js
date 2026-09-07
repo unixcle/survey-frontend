@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { api } from "../api/axios";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 
 export const fetchSurveys = createAsyncThunk(
@@ -11,75 +11,64 @@ export const fetchSurveys = createAsyncThunk(
       return Array.isArray(data) ? data : (data?.results ?? []);
     } catch (err) {
       return rejectWithValue(
-        err?.response?.data || err?.message || "خطا در گرفتن لیست survey ها"
+        err?.response?.data || err?.message || "خطا در گرفتن لیست survey ها",
       );
     }
-  }
+  },
 );
-
 
 export const createSurvey = createAsyncThunk(
   "surveys/createSurvey",
   async (payload, { rejectWithValue }) => {
     try {
-      const { data } = await api.post(
-        "/survey/",
-        payload
-      );
+      const { data } = await api.post("/survey/", payload);
+      Swal.fire({
+        icon: "success",
+        title: "Survey created successfully",
+      });
       return data;
     } catch (err) {
-      return rejectWithValue(
-        err?.response?.data || err?.message || "خطا در ساخت survey"
-      );
+      return rejectWithValue(err);
     }
-  }
+  },
 );
-
 
 export const deleteSurvey = createAsyncThunk(
   "surveys/deleteSurvey",
   async (surveySlug, { rejectWithValue }) => {
     try {
       const response = await api.delete(`/survey/${surveySlug}/`);
-      return surveySlug;  // Return the slug so the item can be removed from the Redux state.
+      return surveySlug; // Return the slug so the item can be removed from the Redux state.
     } catch (err) {
-      return rejectWithValue(
-        err?.response?.data || err?.message || "خطا در حذف survey"
-      );
+      return rejectWithValue(err);
     }
-  }
+  },
 );
-
 
 export const updateSurveyThunk = createAsyncThunk(
   "surveys/updateSurvey",
   async (surveyData, { rejectWithValue }) => {
-    console.log(surveyData)
+    console.log(surveyData);
     try {
       const response = await api.put(`/survey/${surveyData.slug}/`, {
         title: surveyData.title,
         description: surveyData.description,
-        questions: surveyData.questions,  
+        questions: surveyData.questions,
         is_active: surveyData.is_active,
         is_public: surveyData.is_public,
       });
       console.log("UPDATE RESPONSE FROM BACKEND:", response.data);
 
       if (response.status === 200) {
-        
-        Swal.fire('بروزرسانی شد!', 'نظرسنجی با موفقیت ویرایش شد.', 'success');
-      } else {
-        throw new Error(response.data.error || 'خطا در بروزرسانی نظرسنجی');
-        
+        Swal.fire("success");
       }
       return response.data;
     } catch (err) {
-      Swal.fire('خطا', err.message, 'error');
       return rejectWithValue(
-        err?.response?.data || err?.message || 'خطا در بروزرسانی نظرسنجی'
+        err
       );
     }
-  }
+  },
 );
 
 const initialState = {
@@ -147,7 +136,9 @@ const surveySlice = createSlice({
       })
       .addCase(deleteSurvey.fulfilled, (state, action) => {
         const surveySlug = action.payload;
-        state.surveys = state.surveys.filter((survey) => survey.slug !== surveySlug);
+        state.surveys = state.surveys.filter(
+          (survey) => survey.slug !== surveySlug,
+        );
       })
       .addCase(deleteSurvey.rejected, (state, action) => {
         state.error = action.payload || "حذف survey ناموفق بود";
@@ -170,5 +161,6 @@ const surveySlice = createSlice({
   },
 });
 
-export const { addSurvey, updateSurveyInState, clearSurveyError } = surveySlice.actions;
+export const { addSurvey, updateSurveyInState, clearSurveyError } =
+  surveySlice.actions;
 export default surveySlice.reducer;

@@ -2,14 +2,14 @@ import { BACKEND_ERRORS , HTTP_STATUS_ERRORS , NETWORK_ERROR_MESSAGE , TIMEOUT_E
 import { DEFAULT_ERROR_MESSAGE } from "./defaultError";
 
 export const getError = (error) => {
-  if (err?.code === "ECONNABORTED") {
+  if (error.code === "ECONNABORTED") {
     return TIMEOUT_ERROR_MESSAGE;
   }
-  if (!err?.response) {
+  if (!error.response) {
     return NETWORK_ERROR_MESSAGE;
   }
 
-  const { status, data } = err.response;
+  const { status, data } = error.response;
   
   if (HTTP_STATUS_ERRORS[status]) {
     return HTTP_STATUS_ERRORS[status];

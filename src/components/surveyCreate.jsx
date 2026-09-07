@@ -140,12 +140,7 @@ const SurveyCreate = () => {
       })),
     };
     try {
-      dispatch(createSurvey(payload))
-
-      Swal.fire({
-        icon: "success",
-        title: "Survey created successfully",
-      });
+      await dispatch(createSurvey(payload)).unwrap();
       // 2) Redirect to the surveys page after successful creation.
       navigate("/");
     } catch (err) {

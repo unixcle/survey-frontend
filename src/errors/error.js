@@ -12,7 +12,7 @@ export const BACKEND_ERRORS = {
 
 
 export const HTTP_STATUS_ERRORS = {
-  400: "درخواست نامعتبر است",
+  // 400: "your request has a problem",
   401: "please login into your account",
   403: "Unauthorized access",
   404: "not found",

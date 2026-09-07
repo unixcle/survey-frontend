@@ -226,7 +226,16 @@ const SurveyEditPage = () => {
       questions: survey.questions,
       slug: slug,
     };
-    dispatch(updateSurveyThunk(updatedSurvey));
+    try{
+      await dispatch(updateSurveyThunk(updatedSurvey)).unwrap()
+    }
+    catch(err){
+      Swal.fire({
+        icon:"error",
+        title:"Error",
+        text:getError(err)
+      })
+    }
   };
 
   return (
