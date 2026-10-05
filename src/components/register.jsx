@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -28,6 +29,7 @@ const Register = () => {
     password: false,
     confirmPass: false,
   });
+
   const validators = {
     firstName: (v) => v.trim() === "" || v.trim().length >= 2,
     familyName: (v) => v.trim() === "" || v.trim().length >= 2,
@@ -50,6 +52,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const isFormValid =
       validators.firstName(name) &&
       validators.familyName(familyName) &&
@@ -67,19 +70,20 @@ const Register = () => {
         password: true,
         confirmPass: true,
       });
+
       Swal.fire({
         icon: "warning",
         title: "Invalid form",
         text: "Please fix the highlighted fields and try again.",
         confirmButtonText: "OK",
       });
+
       return;
     }
 
     dispatch(registerRequest());
 
     try {
-      // Optional name fields are only included when the user provides a value.
       const payload = {
         username: userName.trim(),
         email: email.trim(),
@@ -93,25 +97,24 @@ const Register = () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      // Handle registration responses that include authentication tokens.
       if (data?.access) {
         dispatch(
           registerSuccess({
             access: data.access,
             refresh: data.refresh,
             user: data.user ?? null,
-          }),
+          })
         );
       } else {
-        // Handle registration responses without authentication tokens.
         dispatch(
           registerSuccess({
             access: null,
             refresh: null,
             user: data.user ?? null,
-          }),
+          })
         );
       }
+
       Swal.fire({
         icon: "success",
         title: "Registration successful!",
@@ -120,7 +123,9 @@ const Register = () => {
       }).then(() => navigate("/login"));
     } catch (err) {
       const errorMsg = getError(err);
+
       dispatch(registerFailure(errorMsg));
+
       Swal.fire({
         icon: "error",
         title: "Registration failed",
@@ -131,21 +136,25 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-3xl rounded-2xl bg-white shadow-lg border border-gray-100 p-8">
-        <div className="mb-6 text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Register</h2>
-          <p className="mt-2 text-sm text-gray-500">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-3 py-6 sm:px-4 sm:py-8">
+      <div className="w-full max-w-3xl rounded-2xl border border-gray-100 bg-white p-4 shadow-lg sm:p-6 md:p-8">
+        <div className="mb-5 text-center sm:mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+            Register
+          </h2>
+
+          <p className="mx-auto mt-2 max-w-md text-xs leading-5 text-gray-500 sm:text-sm">
             Enter Your Email, UserName and Password for Registration.
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-5"
+          className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2"
         >
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          {/* First Name */}
+          <div className="min-w-0">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
               First Name (Optional)
             </label>
 
@@ -156,15 +165,20 @@ const Register = () => {
               onBlur={() =>
                 setTouched((prev) => ({
                   ...prev,
-                  name: true,
+                  firstName: true,
                 }))
               }
               placeholder="Ali"
-              className={`w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition ${inputClass("firstName", name)}`}
+              className={`w-full rounded-xl border bg-white px-3 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-100 sm:px-4 sm:text-base ${inputClass(
+                "firstName",
+                name
+              )}`}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+
+          {/* Last Name */}
+          <div className="min-w-0">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
               Last Name (Optional)
             </label>
 
@@ -179,13 +193,19 @@ const Register = () => {
                 }))
               }
               placeholder="Taghizade"
-              className={`w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition ${inputClass("familyName", familyName)}`}
+              className={`w-full rounded-xl border bg-white px-3 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-100 sm:px-4 sm:text-base ${inputClass(
+                "familyName",
+                familyName
+              )}`}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+
+          {/* Email */}
+          <div className="min-w-0">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
               Email
             </label>
+
             <input
               type="email"
               value={email}
@@ -198,15 +218,20 @@ const Register = () => {
               }
               placeholder="user@gmail.com"
               autoComplete="email"
-              className={`w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition ${inputClass("email", email)}`}
+              className={`w-full rounded-xl border bg-white px-3 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-100 sm:px-4 sm:text-base ${inputClass(
+                "email",
+                email
+              )}`}
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          {/* Username */}
+          <div className="min-w-0">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
               UserName
             </label>
+
             <input
               type="text"
               value={userName}
@@ -219,15 +244,20 @@ const Register = () => {
               }
               placeholder="Alireza"
               autoComplete="username"
-              className={`w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition ${inputClass("userName", userName)}`}
+              className={`w-full rounded-xl border bg-white px-3 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-100 sm:px-4 sm:text-base ${inputClass(
+                "userName",
+                userName
+              )}`}
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          {/* Password */}
+          <div className="min-w-0">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
               Password
             </label>
+
             <input
               type="password"
               value={password}
@@ -241,13 +271,21 @@ const Register = () => {
               placeholder="••••••••"
               autoComplete="new-password"
               minLength={8}
-              className={`w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition ${inputClass("password", password)}`}
+              className={`w-full rounded-xl border bg-white px-3 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-100 sm:px-4 sm:text-base ${inputClass(
+                "password",
+                password
+              )}`}
               required
             />
-            <p className="mt-1 text-xs text-gray-400">8 characters atleast</p>
+
+            <p className="mt-1 text-[11px] text-gray-400 sm:text-xs">
+              8 characters at least
+            </p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+
+          {/* Confirm Password */}
+          <div className="min-w-0">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
               Confirm Password
             </label>
 
@@ -263,25 +301,30 @@ const Register = () => {
               }
               placeholder="••••••••"
               autoComplete="new-password"
-              className={`w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition ${inputClass("confirmPass", confirmPass)}`}
+              className={`w-full rounded-xl border bg-white px-3 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-100 sm:px-4 sm:text-base ${inputClass(
+                "confirmPass",
+                confirmPass
+              )}`}
               required
             />
 
-            {touched.confirmPass && confirmPass && confirmPass !== password && (
-              <p className="mt-1 text-xs text-red-500">
-                Passwords do not match.
-              </p>
-            )}
+            {touched.confirmPass &&
+              confirmPass &&
+              confirmPass !== password && (
+                <p className="mt-1 text-xs text-red-500">
+                  Passwords do not match.
+                </p>
+              )}
           </div>
 
+          {/* Register Button */}
           <div className="md:col-span-2">
             <button
               type="submit"
               disabled={loading}
-              className={`w-full rounded-xl px-4 py-3 font-semibold text-white transition
-              ${
+              className={`w-full rounded-xl px-4 py-3 text-sm font-semibold text-white transition sm:text-base ${
                 loading
-                  ? "bg-gray-400 cursor-not-allowed"
+                  ? "cursor-not-allowed bg-gray-400"
                   : "bg-gray-900 hover:bg-gray-800 active:bg-gray-950"
               }`}
             >
@@ -289,17 +332,18 @@ const Register = () => {
             </button>
           </div>
 
-          <div className="md:col-span-2 flex justify-center">
+          {/* Login Link */}
+          <div className="flex justify-center md:col-span-2">
             <a
               href="/login"
-              className="text-gray-900 font-medium hover:underline"
+              className="text-center text-sm font-medium text-gray-900 hover:underline"
             >
               Click here for login
             </a>
           </div>
         </form>
 
-        <p className="mt-6 text-center text-xs text-gray-400">
+        <p className="mt-5 text-center text-[11px] text-gray-400 sm:mt-6 sm:text-xs">
           I Accept the Terms.
         </p>
       </div>

@@ -8,7 +8,7 @@ import { getError } from "../errors/getError";
 export default function SurveyResponse() {
   const { slug } = useParams();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [data, setData] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -91,7 +91,8 @@ export default function SurveyResponse() {
         title: "Finished!",
         text: "Thanks for your help.",
       });
-      navigate("/")
+
+      navigate("/");
     } catch (err) {
       await Swal.fire({
         icon: "error",
@@ -109,21 +110,24 @@ export default function SurveyResponse() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-500">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 text-center">
+        <p className="text-sm text-gray-500 sm:text-base">Loading...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="text-center">
-          <p className="text-red-500">{error}</p>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-md text-center">
+          <p className="break-words text-sm text-red-500 sm:text-base">
+            {error}
+          </p>
 
           <button
+            type="button"
             onClick={handleFetchDetail}
-            className="mt-4 rounded-xl bg-gray-900 px-5 py-2 text-white hover:bg-gray-800"
+            className="mt-4 w-full rounded-xl bg-gray-900 px-5 py-2.5 text-sm text-white transition hover:bg-gray-800 sm:w-auto sm:text-base"
           >
             Try Again
           </button>
@@ -134,39 +138,46 @@ export default function SurveyResponse() {
 
   if (!data) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-500">No survey data found.</p>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 text-center">
+        <p className="text-sm text-gray-500 sm:text-base">
+          No survey data found.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-50 px-4 py-10">
-      <div className="w-full max-w-3xl rounded-2xl bg-white p-8 shadow-lg">
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-gray-800">
+    <div className="flex min-h-screen justify-center bg-gray-50 px-3 py-5 sm:px-4 sm:py-8 md:py-10">
+      <div className="w-full max-w-3xl min-w-0 rounded-2xl bg-white p-4 shadow-lg sm:p-6 md:p-8">
+        {/* Header */}
+        <div className="mb-6 min-w-0 sm:mb-8">
+          <h1 className="mb-2 break-words text-2xl font-bold text-gray-800 sm:text-3xl">
             {data.title}
           </h1>
 
-          <p className="text-gray-600">{data.description}</p>
+          <p className="break-words text-sm leading-6 text-gray-600 sm:text-base">
+            {data.description}
+          </p>
         </div>
 
-        <div className="space-y-6">
+        {/* Questions */}
+        <div className="space-y-4 sm:space-y-6">
           {data.questions.map((question, index) => (
             <div
               key={question.id}
-              className="rounded-xl border border-gray-200 p-5"
+              className="min-w-0 rounded-xl border border-gray-200 p-4 sm:p-5"
             >
-              <h3 className="mb-4 text-lg font-semibold text-gray-800">
+              <h3 className="mb-3 break-words text-base font-semibold leading-6 text-gray-800 sm:mb-4 sm:text-lg sm:leading-7">
                 {index + 1}. {question.title}
               </h3>
 
+              {/* Multiple Choice */}
               {question.question_type === "multiple_choice" ? (
-                <div className="space-y-3">
+                <div className="space-y-2.5 sm:space-y-3">
                   {question.choices.map((choice) => (
                     <label
                       key={choice.id}
-                      className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition ${
+                      className={`flex min-w-0 cursor-pointer items-start gap-3 rounded-lg border p-3 transition sm:items-center ${
                         answers[question.id] === choice.id
                           ? "border-blue-500 bg-blue-50"
                           : "border-gray-200 hover:bg-gray-50"
@@ -180,10 +191,12 @@ export default function SurveyResponse() {
                         onChange={() =>
                           handleAnswerChange(question.id, choice.id)
                         }
-                        className="accent-blue-500"
+                        className="mt-0.5 shrink-0 accent-blue-500 sm:mt-0"
                       />
 
-                      <span className="text-gray-700">{choice.title}</span>
+                      <span className="min-w-0 break-words text-sm leading-5 text-gray-700 sm:text-base">
+                        {choice.title}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -196,18 +209,19 @@ export default function SurveyResponse() {
                   placeholder="Type your answer here..."
                   rows={4}
                   disabled={submitting}
-                  className="w-full rounded-xl border border-gray-300 p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                  className="w-full resize-y rounded-xl border border-gray-300 px-3 py-3 text-sm leading-6 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 sm:p-4 sm:text-base"
                 />
               )}
             </div>
           ))}
         </div>
 
+        {/* Submit */}
         <button
           type="button"
           onClick={handleSubmit}
           disabled={submitting}
-          className="mt-8 w-full rounded-xl bg-blue-500 py-4 text-lg font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-400"
+          className="mt-6 w-full rounded-xl bg-blue-500 py-3.5 text-base font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-400 sm:mt-8 sm:py-4 sm:text-lg"
         >
           {submitting ? "Submitting..." : "Finish"}
         </button>

@@ -8,6 +8,7 @@ import { getError } from "../errors/getError";
 
 const SurveyEditPage = () => {
   const { slug } = useParams();
+
   const [survey, setSurvey] = useState({
     title: "",
     description: "",
@@ -15,33 +16,37 @@ const SurveyEditPage = () => {
     isActive: true,
     isPublic: true,
   });
+
   const [question, setQuestion] = useState({
     title: "",
-    question_type: "free_text", // یا "multiple_choice"
+    question_type: "free_text",
     required: false,
     choices: [],
-    openEdit: false, // Track edit state for the question
-    editIndex: -1, // Index of the question being edited
+    openEdit: false,
+    editIndex: -1,
   });
+
   const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchSurveyData = async () => {
       try {
         const response = await api.get(`/survey/${slug}/`);
+
         setSurvey({
           ...response.data,
           isActive: response.data.is_active,
           isPublic: response.data.is_public,
-        }); 
+        });
       } catch (err) {
         Swal.fire({
-          icon:"error",
-          title:"Error",
-          text:getError(err)
-        })
+          icon: "error",
+          title: "Error",
+          text: getError(err),
+        });
       }
     };
+
     fetchSurveyData();
   }, [slug]);
 
@@ -57,6 +62,7 @@ const SurveyEditPage = () => {
 
   const handleSurveyChange = (e) => {
     const { name, value } = e.target;
+
     setSurvey((prevSurvey) => ({
       ...prevSurvey,
       [name]: value,
@@ -65,28 +71,38 @@ const SurveyEditPage = () => {
 
   const handleQuestionChange = (e) => {
     const { name, value } = e.target;
+
     setQuestion((prevQuestion) => ({
       ...prevQuestion,
       [name]: value,
       required: value === "multiple_choice",
     }));
   };
+
   const handleChoiceChange = (e, index) => {
     const { value } = e.target;
+
     setQuestion((prevQuestion) => {
       const updatedChoices = [...prevQuestion.choices];
-      updatedChoices[index].title = value; // تغییر عنوان گزینه
-      return { ...prevQuestion, choices: updatedChoices };
+      updatedChoices[index].title = value;
+
+      return {
+        ...prevQuestion,
+        choices: updatedChoices,
+      };
     });
   };
+
   const handleAddChoice = () => {
     setQuestion((prev) => ({
       ...prev,
       choices: [...prev.choices, { title: "" }],
     }));
   };
+
   const handleDeleteChoice = (index) => {
     const updatedChoices = question.choices.filter((_, i) => i !== index);
+
     setQuestion((prevQuestion) => ({
       ...prevQuestion,
       choices: updatedChoices,
@@ -103,6 +119,7 @@ const SurveyEditPage = () => {
         });
         return;
       }
+
       if (
         question.question_type === "multiple_choice" &&
         question.choices.some((choice) => !choice.title.trim())
@@ -114,6 +131,7 @@ const SurveyEditPage = () => {
         });
         return;
       }
+
       if (
         question.question_type === "multiple_choice" &&
         question.choices.length < 2
@@ -124,7 +142,7 @@ const SurveyEditPage = () => {
         });
         return;
       }
-      // editing currebt questions
+
       const updatedQuestions = survey.questions.map((q, index) => {
         if (index === question.editIndex) {
           return {
@@ -135,11 +153,15 @@ const SurveyEditPage = () => {
             required: question.required,
           };
         }
+
         return q;
       });
-      setSurvey({ ...survey, questions: updatedQuestions });
+
+      setSurvey({
+        ...survey,
+        questions: updatedQuestions,
+      });
     } else {
-      // add new questions
       if (!question.title) {
         Swal.fire({
           icon: "warning",
@@ -148,6 +170,7 @@ const SurveyEditPage = () => {
         });
         return;
       }
+
       if (
         question.question_type === "multiple_choice" &&
         question.choices.some((choice) => !choice.title.trim())
@@ -159,6 +182,7 @@ const SurveyEditPage = () => {
         });
         return;
       }
+
       if (
         question.question_type === "multiple_choice" &&
         question.choices.length < 2
@@ -169,14 +193,15 @@ const SurveyEditPage = () => {
         });
         return;
       }
+
       const newQuestion = { ...question };
+
       setSurvey((prevSurvey) => ({
         ...prevSurvey,
         questions: [...prevSurvey.questions, newQuestion],
       }));
     }
 
-    // reseting fields
     setQuestion({
       title: "",
       question_type: "free_text",
@@ -189,11 +214,16 @@ const SurveyEditPage = () => {
 
   const handleDeleteQuestion = (index) => {
     const updatedQuestions = survey.questions.filter((_, i) => i !== index);
-    setSurvey({ ...survey, questions: updatedQuestions });
+
+    setSurvey({
+      ...survey,
+      questions: updatedQuestions,
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!survey.title.trim()) {
       Swal.fire({
         icon: "warning",
@@ -202,6 +232,7 @@ const SurveyEditPage = () => {
       });
       return;
     }
+
     if (survey.questions.length === 0) {
       Swal.fire({
         icon: "error",
@@ -209,7 +240,11 @@ const SurveyEditPage = () => {
       });
       return;
     }
-    const hasEmptyQuestion = survey.questions.some((q) => !q.title.trim());
+
+    const hasEmptyQuestion = survey.questions.some(
+      (q) => !q.title.trim(),
+    );
+
     if (hasEmptyQuestion) {
       Swal.fire({
         icon: "error",
@@ -217,6 +252,7 @@ const SurveyEditPage = () => {
       });
       return;
     }
+
     const updatedSurvey = {
       title: survey.title,
       id: survey.id,
@@ -226,105 +262,134 @@ const SurveyEditPage = () => {
       questions: survey.questions,
       slug: slug,
     };
-    try{
-      await dispatch(updateSurveyThunk(updatedSurvey)).unwrap()
-    }
-    catch(err){
+
+    try {
+      await dispatch(updateSurveyThunk(updatedSurvey)).unwrap();
+    } catch (err) {
       Swal.fire({
-        icon:"error",
-        title:"Error",
-        text:getError(err)
-      })
+        icon: "error",
+        title: "Error",
+        text: getError(err),
+      });
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center py-10 px-4">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Edit Survey</h1>
+    <div className="flex min-h-screen justify-center bg-gray-50 px-3 py-5 sm:px-4 sm:py-8 md:py-10">
+      <div className="w-full max-w-3xl min-w-0 rounded-2xl bg-white p-4 shadow-lg sm:p-6 md:p-8">
+        <h1 className="mb-5 text-2xl font-bold text-gray-800 sm:mb-6 sm:text-3xl">
+          Edit Survey
+        </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
           {/* Survey info */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700">
+          <div className="min-w-0">
+            <label
+              htmlFor="title"
+              className="block text-sm font-semibold text-gray-700"
+            >
               Title
             </label>
+
             <input
               id="title"
               name="title"
               type="text"
               value={survey.title}
               onChange={handleSurveyChange}
-              className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 invalid:border-red-500"
+              className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 invalid:border-red-500 sm:px-4 sm:py-3 sm:text-base"
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700">
+          <div className="min-w-0">
+            <label
+              htmlFor="description"
+              className="block text-sm font-semibold text-gray-700"
+            >
               Description
             </label>
+
             <textarea
               id="description"
               name="description"
-              rows={3}
+              rows={4}
               value={survey.description}
               onChange={handleSurveyChange}
-              className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-2 w-full resize-y rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 sm:px-4 sm:py-3 sm:text-base"
             />
           </div>
 
-          <div className="flex items-center justify-between gap-6">
-            {/* Public / Private Toggle */}
-            <div className="flex items-center gap-3 w-full">
+          {/* Public / Active toggles */}
+          <div className="flex flex-col gap-3 rounded-xl bg-gray-50 p-3 sm:p-4 md:flex-row md:items-center md:justify-between md:gap-6">
+            {/* Public / Private */}
+            <div className="flex w-full items-center justify-between gap-3 md:justify-start">
               <span className="text-sm font-semibold text-gray-700">
                 {survey.isPublic ? "Public" : "Private"}
               </span>
+
               <button
                 type="button"
+                aria-label={`Set survey to ${
+                  survey.isPublic ? "private" : "public"
+                }`}
                 onClick={() =>
-                  setSurvey((prev) => ({ ...prev, isPublic: !prev.isPublic }))
+                  setSurvey((prev) => ({
+                    ...prev,
+                    isPublic: !prev.isPublic,
+                  }))
                 }
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-300 ${
                   survey.isPublic ? "bg-indigo-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                    survey.isPublic ? "translate-x-6" : "translate-x-1"
+                    survey.isPublic
+                      ? "translate-x-6"
+                      : "translate-x-1"
                   }`}
                 />
               </button>
             </div>
 
-            {/* Active / Closed Toggle */}
-            <div className="flex items-center gap-3 w-full">
+            {/* Active / Closed */}
+            <div className="flex w-full items-center justify-between gap-3 md:justify-start">
               <span className="text-sm font-semibold text-gray-700">
                 {survey.isActive ? "Active" : "Closed"}
               </span>
+
               <button
                 type="button"
+                aria-label={`Set survey to ${
+                  survey.isActive ? "closed" : "active"
+                }`}
                 onClick={() =>
-                  setSurvey((prev) => ({ ...prev, isActive: !prev.isActive }))
+                  setSurvey((prev) => ({
+                    ...prev,
+                    isActive: !prev.isActive,
+                  }))
                 }
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-300 ${
                   survey.isActive ? "bg-green-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                    survey.isActive ? "translate-x-6" : "translate-x-1"
+                    survey.isActive
+                      ? "translate-x-6"
+                      : "translate-x-1"
                   }`}
                 />
               </button>
             </div>
           </div>
 
-          <hr className="my-6" />
+          <hr className="my-5 sm:my-6" />
 
           {/* Current questions */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+            <h3 className="mb-3 text-lg font-semibold text-gray-800">
               Current Questions
             </h3>
 
@@ -332,38 +397,51 @@ const SurveyEditPage = () => {
               {survey.questions.map((q, index) => (
                 <div
                   key={index}
-                  className="flex justify-between items-center bg-gray-100 rounded-xl p-4"
+                  className="flex min-w-0 flex-col gap-4 rounded-xl bg-gray-100 p-4 sm:p-5 md:flex-row md:items-center md:justify-between"
                 >
-                  <div>
-                    <p className="font-medium text-gray-700">{q.title}</p>
-                    <p className="text-sm text-gray-500">{q.question_type}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="break-words font-medium text-gray-700">
+                      {q.title}
+                    </p>
+
+                    <p className="mt-1 text-sm text-gray-500">
+                      {q.question_type}
+                    </p>
+
                     {q.question_type === "multiple_choice" && (
-                      <ul className="mt-2 text-sm text-gray-600 list-disc list-inside">
+                      <ul className="mt-2 list-inside list-disc space-y-1 break-words text-sm text-gray-600">
                         {q.choices.map((choice, idx) => (
                           <li key={idx}>
-                            {typeof choice === "string" ? choice : choice.title}
+                            {typeof choice === "string"
+                              ? choice
+                              : choice.title}
                           </li>
                         ))}
                       </ul>
                     )}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex w-full gap-2 border-t border-gray-200 pt-3 md:w-auto md:shrink-0 md:border-t-0 md:pt-0">
                     <button
                       type="button"
                       disabled={survey.total_responses > 0}
                       onClick={() => handleDeleteQuestion(index)}
-                      className={`${survey.total_responses > 0 ? "cursor-not-allowed px-3 py-1 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600" : "px-3 py-1 text-sm rounded-lg bg-red-500 text-white hover:bg-red-600"}`}
+                      className="flex-1 rounded-lg bg-red-500 px-3 py-2 text-sm text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50 md:flex-none"
                     >
                       Delete
                     </button>
+
                     <button
                       type="button"
                       disabled={survey.total_responses > 0}
                       onClick={() =>
-                        setQuestion({ ...q, editIndex: index, openEdit: true })
+                        setQuestion({
+                          ...q,
+                          editIndex: index,
+                          openEdit: true,
+                        })
                       }
-                      className={`${survey.total_responses > 0 ? "cursor-not-allowed px-3 py-1 text-sm rounded-lg bg-green-500 text-white hover:bg-green-600" : "px-3 py-1 text-sm rounded-lg bg-green-500 text-white hover:bg-green-600"}`}
+                      className="flex-1 rounded-lg bg-green-500 px-3 py-2 text-sm text-white transition hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50 md:flex-none"
                     >
                       Edit
                     </button>
@@ -378,63 +456,79 @@ const SurveyEditPage = () => {
             Add / Edit Question
           </h2>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700">
+          <div className="min-w-0">
+            <label
+              htmlFor="question-title"
+              className="block text-sm font-semibold text-gray-700"
+            >
               Question Title
             </label>
+
             <input
+              id="question-title"
               type="text"
               value={question.title}
               disabled={survey.total_responses > 0}
               onChange={handleQuestionChange}
               name="title"
-              className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100 sm:px-4 sm:py-3 sm:text-base"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700">
+          <div className="min-w-0">
+            <label
+              htmlFor="question-type"
+              className="block text-sm font-semibold text-gray-700"
+            >
               Question Type
             </label>
+
             <select
+              id="question-type"
               value={question.question_type}
               onChange={handleQuestionChange}
               name="question_type"
-              className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2 bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="mt-2 w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 sm:px-4 sm:py-3 sm:text-base"
             >
               <option value="free_text">Free Text</option>
-              <option value="multiple_choice">Multiple Choice</option>
+              <option value="multiple_choice">
+                Multiple Choice
+              </option>
             </select>
           </div>
 
           {/* Multiple choice */}
           {question.question_type === "multiple_choice" && (
-            <div className="bg-gray-50 p-4 rounded-xl space-y-3">
+            <div className="space-y-3 rounded-xl bg-gray-50 p-3 sm:p-4">
               <p className="font-semibold text-gray-700">Choices</p>
 
               {question.choices.map((choice, index) => (
-                <div key={index} className="flex items-center gap-2">
+                <div
+                  key={index}
+                  className="flex flex-col gap-2 sm:flex-row sm:items-center"
+                >
                   <input
                     type="text"
                     value={choice.title}
                     onChange={(e) => handleChoiceChange(e, index)}
-                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2"
+                    className="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm sm:py-2 sm:text-base"
                   />
+
                   <button
                     type="button"
                     onClick={() => handleDeleteChoice(index)}
-                    className="px-3 py-2 text-sm rounded-lg bg-red-100 text-red-600 hover:bg-red-200"
+                    className="w-full rounded-lg bg-red-100 px-3 py-2 text-sm text-red-600 transition hover:bg-red-200 sm:w-auto"
                   >
                     Delete
                   </button>
                 </div>
               ))}
 
-              <div className="flex gap-2">
+              <div>
                 <button
                   type="button"
                   onClick={handleAddChoice}
-                  className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600"
+                  className="w-full rounded-lg bg-blue-500 px-4 py-2.5 text-sm text-white transition hover:bg-blue-600 sm:w-auto sm:text-base"
                 >
                   Add
                 </button>
@@ -445,14 +539,16 @@ const SurveyEditPage = () => {
           <button
             type="button"
             onClick={handleAddOrEditQuestion}
-            className="w-full py-3 rounded-xl bg-indigo-500 text-white font-semibold hover:bg-indigo-600 transition"
+            className="w-full rounded-xl bg-indigo-500 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600 sm:text-base"
           >
-            {question.editIndex >= 0 ? "Update Question" : "Add Question"}
+            {question.editIndex >= 0
+              ? "Update Question"
+              : "Add Question"}
           </button>
 
           <button
             type="submit"
-            className="w-full py-3 rounded-xl bg-green-500 text-white font-bold hover:bg-green-600 transition"
+            className="w-full rounded-xl bg-green-500 py-3 text-sm font-bold text-white transition hover:bg-green-600 sm:text-base"
           >
             Save Changes
           </button>

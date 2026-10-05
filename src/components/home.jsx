@@ -1,8 +1,9 @@
+
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { gsap } from "gsap";
 import { api } from "../api/axios";
-import background from "../assets/back2.svg"
+import background from "../assets/back2.svg";
 
 export default function Home() {
   const [page, setPage] = useState(0);
@@ -20,18 +21,22 @@ export default function Home() {
 
   const goTo = (delta) => {
     if (total === 0) return;
-    directionRef.current = delta >= 0 ? 1 : -1;         // Keep navigation circular so moving past the first or last survey
-    setPage((p) => ((p + delta) % total + total) % total);    // wraps around to the opposite end.
+
+    directionRef.current = delta >= 0 ? 1 : -1;
+
+    setPage((p) => ((p + delta) % total + total) % total);
   };
 
   const goToIndex = (index) => {
     if (total === 0 || index === page) return;
+
     directionRef.current = index >= page ? 1 : -1;
     setPage(index);
   };
 
   const fetchPublicSurveys = async () => {
     const res = await api.get("/survey/public/list");
+
     if (res.status === 200) {
       setSurveyPub(res.data);
     }
@@ -41,12 +46,14 @@ export default function Home() {
     reducedMotion.current = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
+
     fetchPublicSurveys();
   }, []);
 
   // Animate the hero content when the page first loads
   useLayoutEffect(() => {
     if (reducedMotion.current) return;
+
     const ctx = gsap.context(() => {
       gsap.from(heroRef.current.children, {
         opacity: 0,
@@ -56,12 +63,14 @@ export default function Home() {
         ease: "power3.out",
       });
     }, heroRef);
+
     return () => ctx.revert();
   }, []);
 
   // Animate the survey card whenever the active survey changes
   useLayoutEffect(() => {
     if (!survey || !cardRef.current) return;
+
     const dir = directionRef.current;
 
     if (reducedMotion.current) {
@@ -78,6 +87,7 @@ export default function Home() {
           ease: "power3.out",
           delay: 0.15,
         });
+
         gsap.fromTo(
           stampRef.current,
           { opacity: 0, scale: 1.6, rotate: -8 },
@@ -90,11 +100,13 @@ export default function Home() {
             delay: 0.55,
           }
         );
+
         isFirstCardRender.current = false;
         return;
       }
 
       const tl = gsap.timeline();
+
       tl.to(cardRef.current, {
         opacity: 0,
         x: -dir * 50,
@@ -102,7 +114,10 @@ export default function Home() {
         duration: 0.3,
         ease: "power2.in",
       })
-        .set(cardRef.current, { x: dir * 50, rotate: dir * 1.5 })
+        .set(cardRef.current, {
+          x: dir * 50,
+          rotate: dir * 1.5,
+        })
         .to(cardRef.current, {
           opacity: 1,
           x: 0,
@@ -124,136 +139,168 @@ export default function Home() {
         }
       );
     });
+
     return () => ctx.revert();
   }, [page, survey]);
 
   return (
-    <div className="min-h-screen bg-cover bg-no-repeat shadow-lg rounded-3xl" style={{ backgroundImage: `url(${background})` }}>
-      <style>{`]
+    <div
+      className="min-h-screen rounded-3xl bg-cover bg-no-repeat shadow-lg"
+      style={{ backgroundImage: `url(${background})` }}
+    >
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;700&display=swap');
-        .font-display { font-family: 'Fraunces', serif; }
-        .font-mono-tight { font-family: 'JetBrains Mono', monospace; }
+
+        .font-display {
+          font-family: 'Fraunces', serif;
+        }
+
+        .font-mono-tight {
+          font-family: 'JetBrains Mono', monospace;
+        }
       `}</style>
 
       {/* Hero */}
-      <section ref={heroRef} className="text-center pt-20 pb-14 px-4">
-        <p className="font-mono-tight text-[11px] tracking-[0.3em] text-white uppercase mb-5">
+      <section
+        ref={heroRef}
+        className="px-4 pb-10 pt-14 text-center sm:pb-14 sm:pt-20 md:pt-24"
+      >
+        <p className="font-mono-tight mb-4 text-[9px] uppercase tracking-[0.25em] text-white sm:mb-5 sm:text-[11px] sm:tracking-[0.3em]">
           Open for responses
         </p>
-        <h2 className="font-display text-5xl md:text-6xl font-bold text-[#F5F5FF] mb-8">
+
+        <h2 className="font-display mb-6 text-3xl font-bold leading-tight text-[#F5F5FF] sm:text-5xl md:mb-8 md:text-6xl">
           Build Ask Learn <span className="text-[#3D5AFE]">✨</span>
         </h2>
-        <div className="flex items-center justify-center gap-4">
+
+        <div className="flex items-center justify-center">
           <Link
             to="/survey/new"
-            className="px-6 py-3 rounded-full bg-[#60de2f] text-white hover:opacity-90 transition font-mono-tight text-md"
+            className="w-full max-w-xs rounded-full bg-[#60de2f] px-5 py-3 text-sm text-white transition hover:opacity-90 sm:w-auto sm:px-6 sm:text-base font-mono-tight"
           >
             create Your Own Survey
           </Link>
         </div>
       </section>
 
-      {/* Public surveys — large single-card carousel */}
-      <section className="relative px-4 pb-24">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-between mb-6 px-2">
-            <p className="font-mono-tight text-[11px] tracking-[0.25em] text-white uppercase">
+      {/* Public surveys */}
+      <section className="relative px-3 pb-16 sm:px-4 sm:pb-24">
+        <div className="mx-auto max-w-5xl">
+          {/* Section header */}
+          <div className="mb-4 flex items-center justify-between px-1 sm:mb-6 sm:px-2">
+            <p className="font-mono-tight text-[9px] uppercase tracking-[0.2em] text-white sm:text-[11px] sm:tracking-[0.25em]">
               Public surveys
             </p>
+
             {total > 0 && (
-              <p className="font-mono-tight text-[11px] tracking-[0.25em] text-[#F6F1E7] uppercase">
-                {String(page + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+              <p className="font-mono-tight text-[9px] uppercase tracking-[0.2em] text-[#F6F1E7] sm:text-[11px] sm:tracking-[0.25em]">
+                {String(page + 1).padStart(2, "0")} /{" "}
+                {String(total).padStart(2, "0")}
               </p>
             )}
           </div>
 
           {total === 0 ? (
-            <div className="h-[60vh] rounded-[28px] border border-[#F6F1E7]/10 animate-pulse flex items-center justify-center">
-              <p className="font-mono-tight text-sm text-[#F6F1E7]/30">
+            <div className="flex h-[50vh] items-center justify-center rounded-[22px] border border-[#F6F1E7]/10 px-4 sm:h-[60vh] sm:rounded-[28px]">
+              <p className="font-mono-tight text-xs text-[#F6F1E7]/30 sm:text-sm">
                 loading surveys…
               </p>
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-3 sm:gap-6">
+              {/* Carousel */}
+              <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
+                {/* Previous */}
                 <button
                   onClick={() => goTo(-1)}
                   aria-label="Previous survey"
-                  className="shrink-0 w-11 h-11 sm:w-14 sm:h-14 rounded-full border border-[#F6F1E7]/20 text-[#F6F1E7] hover:bg-[#F6F1E7] hover:text-[#12141C] transition flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D5AFE]"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#F6F1E7]/20 text-sm text-[#F6F1E7] transition hover:bg-[#F6F1E7] hover:text-[#12141C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D5AFE] sm:h-11 sm:w-11 sm:text-base md:h-14 md:w-14"
                 >
                   ←
                 </button>
 
-                {/* Card with stacked-paper depth */}
-                <div className="relative flex-1 min-h-[62vh]">
-                  <div className="absolute inset-0 translate-x-3 translate-y-3 rotate-2 rounded-[28px] bg-[#F6F1E7]/15" />
-                  <div className="absolute inset-0 translate-x-1.5 translate-y-1.5 -rotate-1 rounded-[28px] bg-[#F6F1E7]/25" />
+                {/* Card */}
+                <div className="relative min-w-0 flex-1">
+                  {/* Back paper layers */}
+                  <div className="absolute inset-0 translate-x-1.5 translate-y-1.5 rotate-2 rounded-[22px] bg-[#F6F1E7]/15 sm:translate-x-2 sm:translate-y-2 sm:rounded-[26px] md:translate-x-3 md:translate-y-3 md:rounded-[28px]" />
+
+                  <div className="absolute inset-0 translate-x-1 translate-y-1 -rotate-1 rounded-[22px] bg-[#F6F1E7]/25 sm:translate-x-1.5 sm:translate-y-1.5 sm:rounded-[26px] md:rounded-[28px]" />
 
                   <Link
                     ref={cardRef}
                     to={`/survey/${survey.slug}`}
-                    className="group relative flex flex-col justify-between h-full min-h-[62vh] rounded-[28px] bg-[#F6F1E7] text-[#1B1B18] p-8 sm:p-12 md:p-16 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]"
+                    className="group relative flex min-h-[520px] flex-col justify-between overflow-hidden rounded-[22px] bg-[#F6F1E7] p-5 text-[#1B1B18] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] sm:min-h-[560px] sm:rounded-[26px] sm:p-8 md:min-h-[62vh] md:rounded-[28px] md:p-12 lg:p-16"
                   >
                     {/* Stamp */}
                     <div
                       ref={stampRef}
-                      className="absolute top-6 right-6 sm:top-8 sm:right-8 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-dashed border-[#E8462F] text-[#E8462F] flex flex-col items-center justify-center rotate-[-8deg] font-mono-tight"
+                      className="absolute right-4 top-4 flex h-14 w-14 rotate-[-8deg] flex-col items-center justify-center rounded-full border-2 border-dashed border-[#E8462F] font-mono-tight text-[#E8462F] sm:right-6 sm:top-6 sm:h-20 sm:w-20 sm:border-[3px] md:right-8 md:top-8 md:h-24 md:w-24"
                     >
-                      <span className="text-[10px] tracking-widest uppercase">No.</span>
-                      <span className="text-xl font-bold leading-none mt-0.5">
+                      <span className="text-[7px] tracking-widest uppercase sm:text-[10px]">
+                        No.
+                      </span>
+
+                      <span className="mt-0.5 text-base font-bold leading-none sm:text-xl">
                         {String(page + 1).padStart(2, "0")}
                       </span>
                     </div>
 
+                    {/* Main content */}
                     <div>
-                      <p className="font-mono-tight text-[11px] tracking-[0.25em] text-[#1B1B18]/45 uppercase mb-6">
+                      <p className="font-mono-tight mb-4 text-[9px] uppercase tracking-[0.2em] text-[#1B1B18]/45 sm:mb-6 sm:text-[11px] sm:tracking-[0.25em]">
                         Public survey
                       </p>
-                      <h3 className="font-display text-3xl sm:text-4xl md:text-6xl font-semibold leading-[1.05] max-w-3xl pr-20">
+
+                      <h3 className="font-display max-w-3xl pr-12 text-2xl font-semibold leading-[1.1] sm:pr-20 sm:text-4xl md:text-5xl lg:text-6xl">
                         {survey.title}
                       </h3>
-                      <p className="text-base sm:text-lg md:text-xl text-[#1B1B18]/65 mt-6 max-w-2xl leading-relaxed">
+
+                      <p className="mt-4 max-w-2xl text-sm leading-6 text-[#1B1B18]/65 sm:mt-6 sm:text-lg sm:leading-relaxed md:text-xl">
                         {survey.description}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between flex-wrap gap-4 border-t border-[#1B1B18]/10 pt-6 mt-10">
-                      <span className="font-mono-tight text-xs uppercase tracking-wide bg-[#1B1B18] text-[#F6F1E7] px-3 py-1.5 rounded-full">
+                    {/* Card footer */}
+                    <div className="mt-8 flex flex-col gap-4 border-t border-[#1B1B18]/10 pt-5 sm:mt-10 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4 sm:pt-6">
+                      <span className="w-fit rounded-full bg-[#1B1B18] px-3 py-1.5 font-mono-tight text-[10px] uppercase tracking-wide text-[#F6F1E7] sm:text-xs">
                         {survey.question_count} questions
                       </span>
-                      <span className="font-mono-tight text-xs text-[#1B1B18]/55">
+
+                      <span className="font-mono-tight text-[10px] text-[#1B1B18]/55 sm:text-xs">
                         {survey.total_responses === 0
                           ? "no responses so far"
                           : `${survey.total_responses} responses so far`}
                       </span>
-                      <span className="font-mono-tight text-sm font-semibold text-[#3D5AFE] flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
+
+                      <span className="flex items-center gap-1.5 font-mono-tight text-xs font-semibold text-[#3D5AFE] transition-all group-hover:gap-2.5 sm:text-sm">
                         Take this survey <span>→</span>
                       </span>
                     </div>
                   </Link>
                 </div>
 
+                {/* Next */}
                 <button
                   onClick={() => goTo(1)}
                   aria-label="Next survey"
-                  className="shrink-0 w-11 h-11 sm:w-14 sm:h-14 rounded-full border border-[#F6F1E7]/20 text-[#F6F1E7] hover:bg-[#F6F1E7] hover:text-[#12141C] transition flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D5AFE]"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#F6F1E7]/20 text-sm text-[#F6F1E7] transition hover:bg-[#F6F1E7] hover:text-[#12141C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D5AFE] sm:h-11 sm:w-11 sm:text-base md:h-14 md:w-14"
                 >
                   →
                 </button>
               </div>
 
               {/* Dots */}
-              <div className="flex items-center justify-center gap-2 mt-8">
+              <div className="mt-6 flex items-center justify-center gap-1.5 sm:mt-8 sm:gap-2">
                 {surveyPub.map((s, i) => (
                   <button
                     key={s.id}
                     onClick={() => goToIndex(i)}
                     aria-label={`Go to survey ${i + 1}`}
                     aria-current={i === page}
-                    className={`h-2.5 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D5AFE] ${
+                    className={`h-2 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3D5AFE] sm:h-2.5 ${
                       i === page
-                        ? "w-7 bg-[#F6F1E7]"
-                        : "w-2.5 bg-[#F6F1E7]/20 hover:bg-[#F6F1E7]/40"
+                        ? "w-6 bg-[#F6F1E7] sm:w-7"
+                        : "w-2 bg-[#F6F1E7]/20 hover:bg-[#F6F1E7]/40 sm:w-2.5"
                     }`}
                   />
                 ))}
