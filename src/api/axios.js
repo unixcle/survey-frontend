@@ -1,11 +1,11 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/api",
+  baseURL: import.meta.env.VITE_BASEURL,
   headers: { "Content-Type": "application/json" },
 });
 
 export const refreshApi = axios.create({
-  baseURL: "http://127.0.0.1:8000/api",
+  baseURL: import.meta.env.VITE_BASEURL,
   headers: { "Content-Type": "application/json" },
 });
